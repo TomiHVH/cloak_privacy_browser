@@ -1,6 +1,6 @@
 # Cloak Browser
 
-A fast, lightweight, and privacy-focused web browser built with Rust and modern web technologies. Features a clean, modular architecture with comprehensive privacy protection, performance optimization, and a beautiful custom start page.
+A fast, lightweight, and privacy-focused web browser built with Rust, JavaScript, and cursor ide and gpt-high agent . Features a clean, modular architecture with comprehensive privacy protection, performance optimization, and a beautiful custom start page.
 
 ## Features
 
@@ -407,7 +407,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with Rust and modern web technologies**
+**Built with Rust and cursor ide and gpt-high agent**
 
 *Cloak Browser - Privacy-focused, performance-optimized, and professionally designed.*
 
