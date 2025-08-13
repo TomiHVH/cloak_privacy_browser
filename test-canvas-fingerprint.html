@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Fingerprint Protection Test - Cloak Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-section h2 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #4ecdc4;
+            padding-bottom: 10px;
+        }
+
+        .canvas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .canvas-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .canvas-item h3 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        canvas {
+            border: 2px solid #4ecdc4;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #f0f0f0;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #51cf66, #40c057);
+        }
+
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .results h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid #4ecdc4;
+        }
+
+        .result-item.success {
+            border-left-color: #51cf66;
+            background: rgba(81, 207, 102, 0.1);
+        }
+
+        .result-item.error {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .result-item.info {
+            border-left-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+
+        .info-box {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid #4ecdc4;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-box h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "🎨";
+            position: absolute;
+            left: 0;
+            color: #4ecdc4;
+        }
+
+        .fingerprint-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .canvas-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Canvas Fingerprint Protection Test</h1>
+            <p>Test and verify Canvas Fingerprint Protection functionality in Cloak Browser</p>
+        </div>
+
+        <div class="info-box">
+            <h3>What is Canvas Fingerprinting?</h3>
+            <ul>
+                <li><strong>Canvas API Tracking:</strong> Websites use HTML5 Canvas to generate unique device fingerprints</li>
+                <li><strong>Text Rendering Differences:</strong> Each device renders text slightly differently</li>
+                <li><strong>Graphics Hardware Detection:</strong> WebGL reveals actual GPU capabilities</li>
+                <li><strong>Font Availability:</strong> Different systems have different fonts</li>
+                <li><strong>Anti-Fingerprinting:</strong> Our protection randomizes output to prevent tracking</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🎨 Canvas Rendering Tests</h2>
+            <div class="canvas-grid">
+                <div class="canvas-item">
+                    <h3>Basic Text Rendering</h3>
+                    <canvas id="textCanvas" width="280" height="100"></canvas>
+                    <div>
+                        <button class="btn btn-primary" onclick="renderText()">Render Text</button>
+                        <button class="btn btn-success" onclick="getTextFingerprint()">Get Fingerprint</button>
+                    </div>
+                </div>
+
+                <div class="canvas-item">
+                    <h3>WebGL Context</h3>
+                    <canvas id="webglCanvas" width="280" height="100"></canvas>
+                    <div>
+                        <button class="btn btn-primary" onclick="initWebGL()">Initialize WebGL</button>
+                        <button class="btn btn-success" onclick="getWebGLFingerprint()">Get WebGL Info</button>
+                    </div>
+                </div>
+
+                <div class="canvas-item">
+                    <h3>Image Data Manipulation</h3>
+                    <canvas id="imageCanvas" width="280" height="100"></canvas>
+                    <div>
+                        <button class="btn btn-primary" onclick="createImageData()">Create Image Data</button>
+                        <button class="btn btn-success" onclick="getImageFingerprint()">Get Image Fingerprint</button>
+                    </div>
+                </div>
+
+                <div class="canvas-item">
+                    <h3>Complex Graphics</h3>
+                    <canvas id="complexCanvas" width="280" height="100"></canvas>
+                    <div>
+                        <button class="btn btn-primary" onclick="drawComplexGraphics()">Draw Graphics</button>
+                        <button class="btn btn-success" onclick="getComplexFingerprint()">Get Fingerprint</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Protection Testing</h2>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="testProtection()">Test Protection</button>
+                <button class="btn btn-success" onclick="compareFingerprints()">Compare Fingerprints</button>
+                <button class="btn btn-primary" onclick="clearResults()">Clear Results</button>
+            </div>
+            <div id="test-results" class="results">
+                <h3>No tests run yet</h3>
+                <p>Click "Test Protection" to run comprehensive tests</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Fingerprint Analysis</h2>
+            <div id="fingerprint-analysis" class="fingerprint-display">
+                <h3>Canvas Fingerprint Analysis</h3>
+                <p>Run tests to see fingerprint analysis results</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas Fingerprint Protection test implementation
+        class CanvasFingerprintTester {
+            constructor() {
+                this.fingerprints = new Map();
+                this.testResults = [];
+                this.initializeCanvases();
+            }
+
+            initializeCanvases() {
+                // Initialize text canvas
+                const textCanvas = document.getElementById('textCanvas');
+                const textCtx = textCanvas.getContext('2d');
+                textCtx.fillStyle = '#f0f0f0';
+                textCtx.fillRect(0, 0, 280, 100);
+                textCtx.fillStyle = '#333';
+                textCtx.font = '16px Arial';
+                textCtx.fillText('Click "Render Text" to test', 10, 50);
+
+                // Initialize WebGL canvas
+                const webglCanvas = document.getElementById('webglCanvas');
+                const webglCtx = webglCanvas.getContext('webgl') || webglCanvas.getContext('experimental-webgl');
+                if (webglCtx) {
+                    webglCtx.clearColor(0.9, 0.9, 0.9, 1.0);
+                    webglCtx.clear(webglCtx.COLOR_BUFFER_BIT);
+                }
+
+                // Initialize image canvas
+                const imageCanvas = document.getElementById('imageCanvas');
+                const imageCtx = imageCanvas.getContext('2d');
+                imageCtx.fillStyle = '#f0f0f0';
+                imageCtx.fillRect(0, 0, 280, 100);
+                imageCtx.fillStyle = '#333';
+                imageCtx.font = '14px Arial';
+                imageCtx.fillText('Click "Create Image Data" to test', 10, 50);
+
+                // Initialize complex canvas
+                const complexCanvas = document.getElementById('complexCanvas');
+                const complexCtx = complexCanvas.getContext('2d');
+                complexCtx.fillStyle = '#f0f0f0';
+                complexCtx.fillRect(0, 0, 280, 100);
+                complexCtx.fillStyle = '#333';
+                complexCtx.font = '14px Arial';
+                complexCtx.fillText('Click "Draw Graphics" to test', 10, 50);
+            }
+
+            renderText() {
+                const canvas = document.getElementById('textCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Clear canvas
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fillRect(0, 0, 280, 100);
+                
+                // Draw various text with different fonts and styles
+                ctx.fillStyle = '#333';
+                ctx.font = '20px Arial';
+                ctx.fillText('Canvas Fingerprint Test', 10, 30);
+                
+                ctx.font = '16px Times New Roman';
+                ctx.fillStyle = '#0066cc';
+                ctx.fillText('Different Font Styles', 10, 55);
+                
+                ctx.font = '14px Courier New';
+                ctx.fillStyle = '#cc6600';
+                ctx.fillText('Mixed Text Rendering', 10, 80);
+                
+                return this.getCanvasFingerprint(canvas);
+            }
+
+            initWebGL() {
+                const canvas = document.getElementById('webglCanvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                
+                if (gl) {
+                    // Clear with a different color
+                    gl.clearColor(0.8, 0.9, 1.0, 1.0);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    
+                    // Get WebGL parameters
+                    const vendor = gl.getParameter(gl.VENDOR);
+                    const renderer = gl.getParameter(gl.RENDERER);
+                    const version = gl.getParameter(gl.VERSION);
+                    
+                    return {
+                        vendor: vendor,
+                        renderer: renderer,
+                        version: version,
+                        fingerprint: this.getCanvasFingerprint(canvas)
+                    };
+                }
+                return null;
+            }
+
+            createImageData() {
+                const canvas = document.getElementById('imageCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Clear canvas
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fillRect(0, 0, 280, 100);
+                
+                // Create a pattern
+                for (let i = 0; i < 280; i += 10) {
+                    for (let j = 0; j < 100; j += 10) {
+                        const color = `hsl(${(i + j) % 360}, 70%, 60%)`;
+                        ctx.fillStyle = color;
+                        ctx.fillRect(i, j, 8, 8);
+                    }
+                }
+                
+                // Get image data
+                const imageData = ctx.getImageData(0, 0, 280, 100);
+                return {
+                    imageData: imageData,
+                    fingerprint: this.getCanvasFingerprint(canvas)
+                };
+            }
+
+            drawComplexGraphics() {
+                const canvas = document.getElementById('complexCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Clear canvas
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fillRect(0, 0, 280, 100);
+                
+                // Draw complex shapes
+                ctx.fillStyle = '#ff6b6b';
+                ctx.beginPath();
+                ctx.arc(70, 50, 30, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                ctx.fillStyle = '#4ecdc4';
+                ctx.fillRect(120, 20, 60, 60);
+                
+                ctx.fillStyle = '#51cf66';
+                ctx.beginPath();
+                ctx.moveTo(200, 20);
+                ctx.lineTo(220, 80);
+                ctx.lineTo(180, 80);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Add some text
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.fillText('Complex Graphics', 10, 90);
+                
+                return this.getCanvasFingerprint(canvas);
+            }
+
+            getCanvasFingerprint(canvas) {
+                try {
+                    // Get the canvas data URL
+                    const dataURL = canvas.toDataURL();
+                    
+                    // Create a simple hash of the data URL
+                    let hash = 0;
+                    for (let i = 0; i < dataURL.length; i++) {
+                        const char = dataURL.charCodeAt(i);
+                        hash = ((hash << 5) - hash) + char;
+                        hash = hash & hash;
+                    }
+                    
+                    return {
+                        hash: Math.abs(hash).toString(16),
+                        dataURL: dataURL.substring(0, 100) + '...',
+                        timestamp: Date.now()
+                    };
+                } catch (error) {
+                    return {
+                        error: error.message,
+                        timestamp: Date.now()
+                    };
+                }
+            }
+
+            testProtection() {
+                const results = {
+                    tests: [],
+                    recommendations: []
+                };
+
+                // Test 1: Text rendering
+                try {
+                    const textFingerprint = this.renderText();
+                    results.tests.push({
+                        name: 'Text Rendering',
+                        status: 'success',
+                        message: 'Text rendered successfully',
+                        fingerprint: textFingerprint
+                    });
+                } catch (error) {
+                    results.tests.push({
+                        name: 'Text Rendering',
+                        status: 'error',
+                        message: 'Failed to render text: ' + error.message
+                    });
+                }
+
+                // Test 2: WebGL
+                try {
+                    const webglResult = this.initWebGL();
+                    if (webglResult) {
+                        results.tests.push({
+                            name: 'WebGL Context',
+                            status: 'success',
+                            message: 'WebGL initialized successfully',
+                            fingerprint: webglResult
+                        });
+                    } else {
+                        results.tests.push({
+                            name: 'WebGL Context',
+                            status: 'error',
+                            message: 'WebGL not supported'
+                        });
+                    }
+                } catch (error) {
+                    results.tests.push({
+                        name: 'WebGL Context',
+                        status: 'error',
+                        message: 'Failed to initialize WebGL: ' + error.message
+                    });
+                }
+
+                // Test 3: Image data
+                try {
+                    const imageResult = this.createImageData();
+                    results.tests.push({
+                        name: 'Image Data',
+                        status: 'success',
+                        message: 'Image data created successfully',
+                        fingerprint: imageResult
+                    });
+                } catch (error) {
+                    results.tests.push({
+                        name: 'Image Data',
+                        status: 'error',
+                        message: 'Failed to create image data: ' + error.message
+                    });
+                }
+
+                // Test 4: Complex graphics
+                try {
+                    const complexResult = this.drawComplexGraphics();
+                    results.tests.push({
+                        name: 'Complex Graphics',
+                        status: 'success',
+                        message: 'Complex graphics drawn successfully',
+                        fingerprint: complexResult
+                    });
+                } catch (error) {
+                    results.tests.push({
+                        name: 'Complex Graphics',
+                        status: 'error',
+                        message: 'Failed to draw complex graphics: ' + error.message
+                    });
+                }
+
+                // Add recommendations
+                if (results.tests.filter(t => t.status === 'success').length < 3) {
+                    results.recommendations.push('Some canvas operations failed - check browser compatibility');
+                }
+
+                results.recommendations.push('Compare fingerprints across different sessions to verify protection');
+
+                return results;
+            }
+
+            compareFingerprints() {
+                const currentFingerprints = [];
+                
+                // Get current fingerprints
+                const textCanvas = document.getElementById('textCanvas');
+                const webglCanvas = document.getElementById('webglCanvas');
+                const imageCanvas = document.getElementById('imageCanvas');
+                const complexCanvas = document.getElementById('complexCanvas');
+                
+                currentFingerprints.push({
+                    type: 'Text Canvas',
+                    fingerprint: this.getCanvasFingerprint(textCanvas)
+                });
+                
+                currentFingerprints.push({
+                    type: 'WebGL Canvas',
+                    fingerprint: this.getCanvasFingerprint(webglCanvas)
+                });
+                
+                currentFingerprints.push({
+                    type: 'Image Canvas',
+                    fingerprint: this.getCanvasFingerprint(imageCanvas)
+                });
+                
+                currentFingerprints.push({
+                    type: 'Complex Canvas',
+                    fingerprint: this.getCanvasFingerprint(complexCanvas)
+                });
+
+                return currentFingerprints;
+            }
+        }
+
+        // Initialize tester
+        const canvasTester = new CanvasFingerprintTester();
+
+        // Global functions for button clicks
+        function renderText() {
+            const result = canvasTester.renderText();
+            showResult('Text rendered successfully. Fingerprint: ' + result.hash, 'success');
+        }
+
+        function getTextFingerprint() {
+            const canvas = document.getElementById('textCanvas');
+            const fingerprint = canvasTester.getCanvasFingerprint(canvas);
+            showResult('Text Canvas Fingerprint: ' + fingerprint.hash, 'info');
+        }
+
+        function initWebGL() {
+            const result = canvasTester.initWebGL();
+            if (result) {
+                showResult('WebGL initialized. Vendor: ' + result.vendor, 'success');
+            } else {
+                showResult('WebGL not supported', 'error');
+            }
+        }
+
+        function getWebGLFingerprint() {
+            const canvas = document.getElementById('webglCanvas');
+            const fingerprint = canvasTester.getCanvasFingerprint(canvas);
+            showResult('WebGL Canvas Fingerprint: ' + fingerprint.hash, 'info');
+        }
+
+        function createImageData() {
+            const result = canvasTester.createImageData();
+            showResult('Image data created successfully. Fingerprint: ' + result.fingerprint.hash, 'success');
+        }
+
+        function getImageFingerprint() {
+            const canvas = document.getElementById('imageCanvas');
+            const fingerprint = canvasTester.getCanvasFingerprint(canvas);
+            showResult('Image Canvas Fingerprint: ' + fingerprint.hash, 'info');
+        }
+
+        function drawComplexGraphics() {
+            const result = canvasTester.drawComplexGraphics();
+            showResult('Complex graphics drawn successfully. Fingerprint: ' + result.hash, 'success');
+        }
+
+        function getComplexFingerprint() {
+            const canvas = document.getElementById('complexCanvas');
+            const fingerprint = canvasTester.getCanvasFingerprint(canvas);
+            showResult('Complex Canvas Fingerprint: ' + fingerprint.hash, 'info');
+        }
+
+        function testProtection() {
+            const result = canvasTester.testProtection();
+            
+            let resultsHTML = '<h3>Canvas Fingerprint Protection Test Results</h3>';
+            
+            result.tests.forEach(test => {
+                const statusClass = test.status === 'success' ? 'success' : 'error';
+                resultsHTML += `
+                    <div class="result-item ${statusClass}">
+                        <strong>${test.name}:</strong> ${test.status === 'success' ? '✓' : '✗'} ${test.message}
+                    </div>
+                `;
+            });
+            
+            if (result.recommendations.length > 0) {
+                resultsHTML += '<div class="result-item info"><strong>Recommendations:</strong></div>';
+                result.recommendations.forEach(rec => {
+                    resultsHTML += `<div class="result-item info">💡 ${rec}</div>`;
+                });
+            }
+            
+            document.getElementById('test-results').innerHTML = resultsHTML;
+        }
+
+        function compareFingerprints() {
+            const fingerprints = canvasTester.compareFingerprints();
+            
+            let analysisHTML = '<h3>Canvas Fingerprint Analysis</h3>';
+            analysisHTML += '<p><strong>Current Session Fingerprints:</strong></p>';
+            
+            fingerprints.forEach(fp => {
+                analysisHTML += `
+                    <div class="result-item info">
+                        <strong>${fp.type}:</strong> ${fp.fingerprint.hash || 'Error: ' + fp.fingerprint.error}
+                    </div>
+                `;
+            });
+            
+            analysisHTML += '<p><strong>Note:</strong> With Canvas Fingerprint Protection enabled, these fingerprints should be randomized to prevent tracking.</p>';
+            
+            document.getElementById('fingerprint-analysis').innerHTML = analysisHTML;
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '<h3>No tests run yet</h3><p>Click "Test Protection" to run comprehensive tests</p>';
+            document.getElementById('fingerprint-analysis').innerHTML = '<h3>Canvas Fingerprint Analysis</h3><p>Run tests to see fingerprint analysis results</p>';
+        }
+
+        function showResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultItem = document.createElement('div');
+            resultItem.className = `result-item ${type}`;
+            resultItem.textContent = message;
+            
+            resultsDiv.appendChild(resultItem);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            showResult('Canvas Fingerprint Protection test page loaded successfully', 'success');
+        });
+    </script>
+</body>
+</html>

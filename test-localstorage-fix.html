@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>localStorage Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+        .status.success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .status.error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .status.info { background: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔧 localStorage Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>🧪 Test localStorage Access</h2>
+        <button class="test-button" onclick="testLocalStorage()">Test localStorage</button>
+        <button class="test-button" onclick="testSafeLocalStorage()">Test Safe localStorage</button>
+        <button class="test-button" onclick="testAdvancedSettings()">Test Advanced Settings</button>
+        <div id="test-results" class="status info">Click a test button to see results...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="console-output" style="background: #000; color: #0f0; padding: 10px; border-radius: 4px; font-family: monospace; height: 300px; overflow-y: auto;"></div>
+        <button class="test-button" onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <script>
+        function log(message) {
+            const consoleEl = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleEl.innerHTML += `[${timestamp}] ${message}<br>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            console.log(message);
+        }
+
+        function testLocalStorage() {
+            const resultsEl = document.getElementById('test-results');
+            log('🧪 Testing direct localStorage access...');
+            
+            try {
+                // Test read
+                const testValue = localStorage.getItem('test_key');
+                log(`✅ localStorage read: ${testValue}`);
+                
+                // Test write
+                localStorage.setItem('test_key', 'test_value_' + Date.now());
+                log('✅ localStorage write: successful');
+                
+                // Test read back
+                const readBack = localStorage.getItem('test_key');
+                log(`✅ localStorage read back: ${readBack}`);
+                
+                resultsEl.textContent = '✅ localStorage access successful';
+                resultsEl.className = 'status success';
+                
+            } catch (error) {
+                log(`❌ localStorage error: ${error.message}`);
+                resultsEl.textContent = `❌ localStorage error: ${error.message}`;
+                resultsEl.className = 'status error';
+            }
+        }
+
+        function testSafeLocalStorage() {
+            const resultsEl = document.getElementById('test-results');
+            log('🧪 Testing safe localStorage functions...');
+            
+            // Test safe functions
+            const testValue = safeGetLocalStorage('safe_test_key', 'default_value');
+            log(`✅ safeGetLocalStorage: ${testValue}`);
+            
+            safeSetLocalStorage('safe_test_key', 'safe_value_' + Date.now());
+            log('✅ safeSetLocalStorage: successful');
+            
+            const readBack = safeGetLocalStorage('safe_test_key');
+            log(`✅ safeGetLocalStorage read back: ${readBack}`);
+            
+            resultsEl.textContent = '✅ Safe localStorage functions working';
+            resultsEl.className = 'status success';
+        }
+
+        function testAdvancedSettings() {
+            const resultsEl = document.getElementById('test-results');
+            log('🧪 Testing Advanced Settings access...');
+            
+            if (typeof showAdvancedSettings === 'function') {
+                log('✅ showAdvancedSettings function found');
+                try {
+                    showAdvancedSettings();
+                    log('✅ Advanced Settings opened successfully');
+                    resultsEl.textContent = '✅ Advanced Settings working';
+                    resultsEl.className = 'status success';
+                } catch (error) {
+                    log(`❌ Error opening Advanced Settings: ${error.message}`);
+                    resultsEl.textContent = `❌ Advanced Settings error: ${error.message}`;
+                    resultsEl.className = 'status error';
+                }
+            } else {
+                log('❌ showAdvancedSettings function not found');
+                resultsEl.textContent = '❌ Advanced Settings function not available';
+                resultsEl.className = 'status error';
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        // Safe localStorage functions (same as in ui.js)
+        function safeGetLocalStorage(key, defaultValue = null) {
+            try {
+                return localStorage.getItem(key) || defaultValue;
+            } catch (error) {
+                console.warn('localStorage access denied for key:', key, error);
+                return defaultValue;
+            }
+        }
+        
+        function safeSetLocalStorage(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (error) {
+                console.warn('localStorage write denied for key:', key, error);
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            log('🚀 Page loaded, localStorage fix test ready');
+            log('🔧 Testing for safe localStorage functions...');
+            
+            if (typeof safeGetLocalStorage === 'function' && typeof safeSetLocalStorage === 'function') {
+                log('✅ Safe localStorage functions available');
+            } else {
+                log('❌ Safe localStorage functions not available');
+            }
+        });
+
+        // Log any errors
+        window.addEventListener('error', (event) => {
+            log(`❌ JavaScript error: ${event.message}`);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New Features - Minimal Browser</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #005a9e;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+        }
+        .error {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+        .info {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test New Features - Minimal Browser</h1>
+    
+    <div class="test-section">
+        <h2>🔧 Service Worker Tests</h2>
+        <button class="test-button" onclick="testServiceWorker()">Test Service Worker</button>
+        <button class="test-button" onclick="testCache()">Test Cache</button>
+        <button class="test-button" onclick="testNotifications()">Test Notifications</button>
+        <div id="sw-status" class="status">Click a button to test Service Worker features...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚡ Performance Boosts Tests</h2>
+        <button class="test-button" onclick="testPerformance()">Test Performance Monitoring</button>
+        <button class="test-button" onclick="testPrefetch()">Test Prefetch</button>
+        <button class="test-button" onclick="testLazyImages()">Test Lazy Images</button>
+        <button class="test-button" onclick="testHttp3()">Test HTTP/3</button>
+        <div id="perf-status" class="status">Click a button to test Performance Boosts features...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Performance Metrics</h2>
+        <div id="metrics-display">
+            <p>Performance metrics will be displayed here...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the new modules
+        import { ServiceWorkerManager } from './src/service-worker.js';
+        import { PerformanceBoosts } from './src/performance-boosts.js';
+
+        // Global instances for testing
+        let serviceWorker;
+        let performanceBoosts;
+
+        // Initialize modules
+        async function initModules() {
+            try {
+                serviceWorker = new ServiceWorkerManager();
+                performanceBoosts = new PerformanceBoosts();
+                
+                await serviceWorker.init();
+                await performanceBoosts.init();
+                
+                console.log('Modules initialized successfully');
+                updateStatus('sw-status', '✅ Modules initialized successfully', 'success');
+            } catch (error) {
+                console.error('Failed to initialize modules:', error);
+                updateStatus('sw-status', '❌ Failed to initialize modules: ' + error.message, 'error');
+            }
+        }
+
+        // Test Service Worker
+        window.testServiceWorker = async function() {
+            if (!serviceWorker) {
+                updateStatus('sw-status', '❌ Service Worker not initialized', 'error');
+                return;
+            }
+
+            try {
+                const status = serviceWorker.getStatus();
+                const cacheInfo = await serviceWorker.getCacheInfo();
+                
+                const result = `
+                    <strong>Service Worker Status:</strong><br>
+                    • Registered: ${status.isRegistered ? '✅ Yes' : '❌ No'}<br>
+                    • Supported: ${status.isSupported ? '✅ Yes' : '❌ No'}<br>
+                    • Background Sync: ${status.hasBackgroundSync ? '✅ Yes' : '❌ No'}<br>
+                    • Notifications: ${status.hasNotifications ? '✅ Yes' : '❌ No'}<br>
+                    • Permission: ${status.notificationPermission}<br>
+                    <br>
+                    <strong>Cache Info:</strong><br>
+                    • Cache Name: ${cacheInfo?.name || 'N/A'}<br>
+                    • Cache Size: ${cacheInfo?.size || 'N/A'}<br>
+                    • Cache Entries: ${cacheInfo?.entries || 'N/A'}
+                `;
+                
+                updateStatus('sw-status', result, 'success');
+            } catch (error) {
+                updateStatus('sw-status', '❌ Service Worker test failed: ' + error.message, 'error');
+            }
+        };
+
+        // Test Cache
+        window.testCache = async function() {
+            if (!serviceWorker) {
+                updateStatus('sw-status', '❌ Service Worker not initialized', 'error');
+                return;
+            }
+
+            try {
+                const success = await serviceWorker.clearCache();
+                if (success) {
+                    updateStatus('sw-status', '✅ Cache cleared successfully', 'success');
+                } else {
+                    updateStatus('sw-status', '❌ Failed to clear cache', 'error');
+                }
+            } catch (error) {
+                updateStatus('sw-status', '❌ Cache test failed: ' + error.message, 'error');
+            }
+        };
+
+        // Test Notifications
+        window.testNotifications = async function() {
+            if (!serviceWorker) {
+                updateStatus('sw-status', '❌ Service Worker not initialized', 'error');
+                return;
+            }
+
+            try {
+                const permission = await serviceWorker.requestNotificationPermission();
+                if (permission) {
+                    const success = await serviceWorker.sendNotification('Test Notification', {
+                        body: 'This is a test notification from Minimal Browser!',
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23007acc"/></svg>'
+                    });
+                    
+                    if (success) {
+                        updateStatus('sw-status', '✅ Notification sent successfully', 'success');
+                    } else {
+                        updateStatus('sw-status', '❌ Failed to send notification', 'error');
+                    }
+                } else {
+                    updateStatus('sw-status', '❌ Notification permission denied', 'error');
+                }
+            } catch (error) {
+                updateStatus('sw-status', '❌ Notification test failed: ' + error.message, 'error');
+            }
+        };
+
+        // Test Performance Monitoring
+        window.testPerformance = async function() {
+            if (!performanceBoosts) {
+                updateStatus('perf-status', '❌ Performance Boosts not initialized', 'error');
+                return;
+            }
+
+            try {
+                const stats = performanceBoosts.getPerformanceStats();
+                const result = `
+                    <strong>Performance Stats:</strong><br>
+                    • Enabled: ${stats.enabled ? '✅ Yes' : '❌ No'}<br>
+                    • Prefetch: ${stats.prefetch.enabled ? '✅ Enabled' : '❌ Disabled'} (${stats.prefetch.active} active, ${stats.prefetch.queued} queued)<br>
+                    • Lazy Images: ${stats.lazyImages.enabled ? '✅ Enabled' : '❌ Disabled'}<br>
+                    • HTTP/3: ${stats.http3.enabled ? '✅ Enabled' : '❌ Disabled'} (${stats.http3.supported ? 'Supported' : 'Not Supported'})<br>
+                    <br>
+                    <strong>Metrics:</strong><br>
+                    • Page Load: ${stats.metrics.pageLoadTime.toFixed(0)}ms<br>
+                    • DOM Ready: ${stats.metrics.domContentLoaded.toFixed(0)}ms<br>
+                    • FCP: ${stats.metrics.firstContentfulPaint.toFixed(0)}ms<br>
+                    • LCP: ${stats.metrics.largestContentfulPaint.toFixed(0)}ms<br>
+                    • CLS: ${stats.metrics.cumulativeLayoutShift.toFixed(3)}
+                `;
+                
+                updateStatus('perf-status', result, 'success');
+            } catch (error) {
+                updateStatus('perf-status', '❌ Performance test failed: ' + error.message, 'error');
+            }
+        };
+
+        // Test Prefetch
+        window.testPrefetch = async function() {
+            if (!performanceBoosts) {
+                updateStatus('perf-status', '❌ Performance Boosts not initialized', 'error');
+                return;
+            }
+
+            try {
+                // Simulate prefetching
+                performanceBoosts.prefetchVisibleLinks();
+                updateStatus('perf-status', '✅ Prefetch test completed - check console for details', 'success');
+            } catch (error) {
+                updateStatus('perf-status', '❌ Prefetch test failed: ' + error.message, 'error');
+            }
+        };
+
+        // Test Lazy Images
+        window.testLazyImages = async function() {
+            if (!performanceBoosts) {
+                updateStatus('perf-status', '❌ Performance Boosts not initialized', 'error');
+                return;
+            }
+
+            try {
+                // Add some test images
+                const testContainer = document.createElement('div');
+                testContainer.innerHTML = `
+                    <img data-src="https://via.placeholder.com/300x200/007acc/ffffff?text=Test+Image+1" alt="Test 1" style="width: 300px; height: 200px; margin: 10px;">
+                    <img data-src="https://via.placeholder.com/300x200/4caf50/ffffff?text=Test+Image+2" alt="Test 2" style="width: 300px; height: 200px; margin: 10px;">
+                    <img data-src="https://via.placeholder.com/300x200/ff9800/ffffff?text=Test+Image+3" alt="Test 3" style="width: 300px; height: 200px; margin: 10px;">
+                `;
+                
+                document.body.appendChild(testContainer);
+                
+                // Apply lazy loading
+                performanceBoosts.lazyLoadImages();
+                
+                updateStatus('perf-status', '✅ Lazy image test completed - images should load as you scroll', 'success');
+            } catch (error) {
+                updateStatus('perf-status', '❌ Lazy image test failed: ' + error.message, 'error');
+            }
+        };
+
+        // Test HTTP/3
+        window.testHttp3 = async function() {
+            if (!performanceBoosts) {
+                updateStatus('perf-status', '❌ Performance Boosts not initialized', 'error');
+                return;
+            }
+
+            try {
+                const result = await performanceBoosts.toggleHttp3();
+                updateStatus('perf-status', `✅ HTTP/3 toggle test completed - Status: ${result ? 'Enabled' : 'Disabled'}`, 'success');
+            } catch (error) {
+                updateStatus('perf-status', '❌ HTTP/3 test failed: ' + error.message, 'error');
+            }
+        };
+
+        // Update status display
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = message;
+                element.className = `status ${type}`;
+            }
+        }
+
+        // Initialize modules when page loads
+        document.addEventListener('DOMContentLoaded', initModules);
+
+        // Update metrics display periodically
+        setInterval(() => {
+            if (performanceBoosts) {
+                const stats = performanceBoosts.getPerformanceStats();
+                const metricsDisplay = document.getElementById('metrics-display');
+                if (metricsDisplay) {
+                    metricsDisplay.innerHTML = `
+                        <h3>Real-time Performance Metrics</h3>
+                        <pre>${JSON.stringify(stats, null, 2)}</pre>
+                    `;
+                }
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

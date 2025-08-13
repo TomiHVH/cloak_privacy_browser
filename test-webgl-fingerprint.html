@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGL Fingerprint Randomization Test - Minimal Browser</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #00aaff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #00aaff;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        .test-section {
+            background: #0f0f0f;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+        
+        .result {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .success { background: #006600; border: 1px solid #00ff00; }
+        .warning { background: #664400; border: 1px solid #ffaa00; }
+        .error { background: #660000; border: 1px solid #ff4444; }
+        .info { background: #004466; border: 1px solid #00aaff; }
+        
+        button {
+            background: #1a1a1a;
+            color: #ffffff;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        button:hover {
+            background: #2a2a2a;
+            border-color: #00aaff;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status.active { background: #006600; color: #00ff00; }
+        .status.inactive { background: #660000; color: #ff4444; }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .comparison > div {
+            background: #0f0f0f;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+        
+        .comparison h4 {
+            color: #00aaff;
+            margin-top: 0;
+        }
+        
+        .fingerprint-value {
+            background: #000;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin: 5px 0;
+        }
+        
+        .refresh-notice {
+            background: #664400;
+            border: 1px solid #ffaa00;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        
+        .refresh-notice strong {
+            color: #ffaa00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 WebGL Fingerprint Randomization Test</h1>
+        
+        <div class="test-section">
+            <h2>What is WebGL Fingerprinting?</h2>
+            <p>
+                WebGL fingerprinting is a tracking technique where websites can identify your browser 
+                based on your GPU information. This includes:
+            </p>
+            <ul>
+                <li><strong>Vendor</strong>: Your GPU manufacturer (Intel, NVIDIA, AMD, etc.)</li>
+                <li><strong>Renderer</strong>: Your specific GPU model</li>
+                <li><strong>Version</strong>: Your WebGL/OpenGL version</li>
+            </ul>
+            <p>
+                This information can be used to create a unique "fingerprint" that tracks you across websites, 
+                even when you clear cookies or use incognito mode.
+            </p>
+        </div>
+        
+        <div class="test-section">
+            <h2>Current WebGL Fingerprint</h2>
+            <div id="current-fingerprint">
+                <p>Click "Test Current Fingerprint" to see your current WebGL information.</p>
+                <button onclick="testCurrentFingerprint()">Test Current Fingerprint</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Protection Status</h2>
+            <div id="protection-status">
+                <p>Checking protection status...</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test WebGL Fingerprint Randomization</h2>
+            <p>
+                This test will show you the difference between your real WebGL fingerprint and 
+                the randomized one when protection is enabled.
+            </p>
+            
+            <div class="refresh-notice">
+                <strong>⚠️ Important:</strong> After enabling WebGL fingerprint randomization in the browser settings, 
+                you may need to refresh this page to see the effect.
+            </div>
+            
+            <button onclick="testFingerprintRandomization()">Test Fingerprint Randomization</button>
+            <button onclick="refreshPage()">Refresh Page</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>How to Enable Protection</h2>
+            <ol>
+                <li>Open the browser settings (⚙️ button or Ctrl+,)</li>
+                <li>Go to the "WebRTC Protection" section</li>
+                <li>Enable "WebGL Fingerprint Randomization"</li>
+                <li>Refresh this page to see the effect</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h2>Privacy Benefits</h2>
+            <ul>
+                <li><strong>Prevents Tracking</strong>: Websites can't identify you by your GPU</li>
+                <li><strong>Consistent Experience</strong>: Same randomized values throughout your session</li>
+                <li><strong>No Performance Impact</strong>: WebGL still works normally</li>
+                <li><strong>Session Privacy</strong>: New values each time you restart the browser</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Test current WebGL fingerprint
+        function testCurrentFingerprint() {
+            const container = document.getElementById('current-fingerprint');
+            
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                
+                if (!gl) {
+                    container.innerHTML = `
+                        <div class="result error">
+                            ❌ WebGL not supported in this browser
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const vendor = gl.getParameter(gl.VENDOR);
+                const renderer = gl.getParameter(gl.RENDERER);
+                const version = gl.getParameter(gl.VERSION);
+                
+                container.innerHTML = `
+                    <div class="result info">
+                        <h4>WebGL Information Detected:</h4>
+                        <div class="fingerprint-value"><strong>Vendor:</strong> ${vendor}</div>
+                        <div class="fingerprint-value"><strong>Renderer:</strong> ${renderer}</div>
+                        <div class="fingerprint-value"><strong>Version:</strong> ${version}</div>
+                    </div>
+                    <p><em>This is your real WebGL fingerprint that websites can see.</em></p>
+                `;
+                
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="result error">
+                        ❌ Error testing WebGL: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Test fingerprint randomization
+        function testFingerprintRandomization() {
+            const container = document.querySelector('.test-section:nth-child(4)');
+            
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                
+                if (!gl) {
+                    container.innerHTML += `
+                        <div class="result error">
+                            ❌ WebGL not supported in this browser
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const vendor = gl.getParameter(gl.VENDOR);
+                const renderer = gl.getParameter(gl.RENDERER);
+                const version = gl.getParameter(gl.VERSION);
+                
+                // Check if values look randomized (not typical real GPU names)
+                const isRandomized = isFingerprintRandomized(vendor, renderer);
+                
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `result ${isRandomized ? 'success' : 'warning'}`;
+                
+                if (isRandomized) {
+                    resultDiv.innerHTML = `
+                        <h4>✅ WebGL Fingerprint Randomization Active</h4>
+                        <p>Your WebGL fingerprint appears to be randomized:</p>
+                        <div class="fingerprint-value"><strong>Vendor:</strong> ${vendor}</div>
+                        <div class="fingerprint-value"><strong>Renderer:</strong> ${renderer}</div>
+                        <div class="fingerprint-value"><strong>Version:</strong> ${version}</div>
+                        <p><em>These values are randomized and change each session!</em></p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h4>⚠️ WebGL Fingerprint Randomization Not Active</h4>
+                        <p>Your WebGL fingerprint appears to be real (not randomized):</p>
+                        <div class="fingerprint-value"><strong>Vendor:</strong> ${vendor}</div>
+                        <div class="fingerprint-value"><strong>Renderer:</strong> ${renderer}</div>
+                        <div class="fingerprint-value"><strong>Version:</strong> ${version}</div>
+                        <p><em>Enable WebGL fingerprint randomization in browser settings for protection.</em></p>
+                    `;
+                }
+                
+                // Remove any existing results
+                const existingResults = container.querySelectorAll('.result');
+                existingResults.forEach(result => result.remove());
+                
+                container.appendChild(resultDiv);
+                
+            } catch (error) {
+                container.innerHTML += `
+                    <div class="result error">
+                        ❌ Error testing fingerprint randomization: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Check if fingerprint appears randomized
+        function isFingerprintRandomized(vendor, renderer) {
+            // Common real GPU vendor names
+            const realVendors = [
+                'intel', 'nvidia', 'amd', 'apple', 'microsoft', 'qualcomm', 'arm', 'mali'
+            ];
+            
+            // Common real GPU renderer patterns
+            const realRendererPatterns = [
+                'geforce', 'radeon', 'hd graphics', 'iris', 'uhd', 'adreno', 'mali-g'
+            ];
+            
+            const vendorLower = vendor.toLowerCase();
+            const rendererLower = renderer.toLowerCase();
+            
+            // Check if vendor looks real
+            const hasRealVendor = realVendors.some(v => vendorLower.includes(v));
+            
+            // Check if renderer looks real
+            const hasRealRenderer = realRendererPatterns.some(p => rendererLower.includes(p));
+            
+            // If both look real, probably not randomized
+            // If neither looks real, probably randomized
+            return !(hasRealVendor && hasRealRenderer);
+        }
+        
+        // Check protection status
+        function checkProtectionStatus() {
+            const container = document.getElementById('protection-status');
+            
+            try {
+                // Try to access the browser's WebRTC protection module
+                if (window.MinimalBrowser && window.MinimalBrowser.webrtcProtection) {
+                    const status = window.MinimalBrowser.webrtcProtection.getStatus();
+                    const isProtected = status.randomizeWebGL && status.webGLRandomized;
+                    
+                    container.innerHTML = `
+                        <div class="result ${isProtected ? 'success' : 'warning'}">
+                            <h4>WebGL Fingerprint Protection Status</h4>
+                            <p>
+                                <span class="status ${isProtected ? 'active' : 'inactive'}">
+                                    ${isProtected ? 'ACTIVE' : 'INACTIVE'}
+                                </span>
+                                ${isProtected ? 'WebGL fingerprint randomization is enabled and working.' : 'WebGL fingerprint randomization is not enabled.'}
+                            </p>
+                            <p><strong>Protection Level:</strong> ${status.enabled ? 'Enhanced' : 'Basic'}</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="result info">
+                            <h4>WebGL Fingerprint Protection Status</h4>
+                            <p>Unable to detect browser protection status. Make sure you're using Minimal Browser.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="result error">
+                        ❌ Error checking protection status: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Refresh page
+        function refreshPage() {
+            location.reload();
+        }
+        
+        // Auto-check protection status on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkProtectionStatus();
+            console.log('🔒 WebGL Fingerprint Randomization Test Page Loaded');
+        });
+    </script>
+</body>
+</html>

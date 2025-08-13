@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Settings Test</h1>
+    
+    <div class="test-section">
+        <h2>Ad Blocker Status</h2>
+        <div id="status-display" class="status info">Checking ad blocker status...</div>
+        <button class="test-button" onclick="checkAdBlocker()">Check Ad Blocker</button>
+        <button class="test-button" onclick="testSettings()">Test Settings Panel</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="console-output" style="background: #000; color: #0f0; padding: 10px; border-radius: 4px; font-family: monospace; height: 200px; overflow-y: auto;"></div>
+        <button class="test-button" onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <script>
+        function log(message) {
+            const consoleEl = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleEl.innerHTML += `[${timestamp}] ${message}<br>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            console.log(message);
+        }
+
+        function checkAdBlocker() {
+            const statusEl = document.getElementById('status-display');
+            log('🔍 Checking ad blocker availability...');
+            
+            if (window.adBlocker) {
+                const enabled = window.adBlocker.enabled;
+                const level = window.adBlocker.blockingLevel;
+                statusEl.textContent = `Ad Blocker: ${enabled ? '✅ Enabled' : '❌ Disabled'} (${level} mode)`;
+                statusEl.className = `status ${enabled ? 'success' : 'error'}`;
+                log(`✅ Ad Blocker found: enabled=${enabled}, level=${level}`);
+            } else {
+                statusEl.textContent = '❌ Ad Blocker not available';
+                statusEl.className = 'status error';
+                log('❌ Ad Blocker not found in window object');
+            }
+        }
+
+        function testSettings() {
+            log('🔧 Testing settings panel creation...');
+            
+            // Check if showSettings function exists
+            if (typeof showSettings === 'function') {
+                log('✅ showSettings function found');
+                try {
+                    showSettings();
+                    log('✅ Settings panel created successfully');
+                } catch (error) {
+                    log(`❌ Error creating settings panel: ${error.message}`);
+                }
+            } else {
+                log('❌ showSettings function not found');
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            log('🚀 Page loaded, checking for ad blocker...');
+            setTimeout(() => {
+                checkAdBlocker();
+            }, 1000);
+        });
+
+        // Log any errors
+        window.addEventListener('error', (event) => {
+            log(`❌ JavaScript error: ${event.message}`);
+        });
+    </script>
+</body>
+</html>

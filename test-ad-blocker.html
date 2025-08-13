@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Blocker Test Page</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #4CAF50, #2196F3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            color: #ccc;
+            font-size: 1.1em;
+        }
+        
+        .test-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-section h2 {
+            margin: 0 0 20px 0;
+            color: #4CAF50;
+            font-size: 1.5em;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .test-item {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 15px;
+            transition: all 0.2s;
+        }
+        
+        .test-item:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+        }
+        
+        .test-item h3 {
+            margin: 0 0 10px 0;
+            color: #fff;
+        }
+        
+        .test-item p {
+            margin: 0 0 15px 0;
+            color: #ccc;
+            font-size: 0.9em;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .test-button.secondary {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+        }
+        
+        .test-button.warning {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+        }
+        
+        .test-button.danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+        
+        .stats-display {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #ccc;
+            font-size: 0.9em;
+        }
+        
+        .log-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .log-container h3 {
+            margin: 0 0 15px 0;
+            color: #4CAF50;
+        }
+        
+        .log-content {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #00ff00;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        
+        .log-entry.info { color: #00ff00; }
+        .log-entry.warning { color: #ffff00; }
+        .log-entry.error { color: #ff0000; }
+        .log-entry.success { color: #00ffff; }
+        
+        .ad-demo {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .ad-demo h3 {
+            color: #FF9800;
+            margin-bottom: 15px;
+        }
+        
+        .ad-placeholder {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+            padding: 40px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .ad-placeholder.blocked {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        /* Floating button hover effects */
+        #floating-ad-blocker-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        
+        #floating-ad-blocker-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚫 Ad Blocker Test Suite</h1>
+            <p>Comprehensive testing and demonstration of Brave-level ad and tracker blocking capabilities</p>
+        </div>
+
+        <!-- Stats Display -->
+        <div class="stats-display">
+            <h2>📊 Real-time Protection Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="ads-blocked">0</div>
+                    <div class="stat-label">Ads Blocked</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="trackers-blocked">0</div>
+                    <div class="stat-label">Trackers Blocked</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="scripts-blocked">0</div>
+                    <div class="stat-label">Scripts Blocked</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="filter-rules">0</div>
+                    <div class="stat-label">Active Filter Rules</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="test-section">
+            <h2>🧪 Test Controls</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Ad Blocker Management</h3>
+                    <p>Control the ad blocker functionality and view detailed statistics</p>
+                    <button class="test-button" onclick="openAdBlockerUI()">
+                        🚫 Open Ad Blocker UI
+                    </button>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Filter List Management</h3>
+                    <p>Manage filter lists and update blocking rules</p>
+                    <button class="test-button secondary" onclick="updateFilterLists()">
+                        🔄 Update Filter Lists
+                    </button>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Blocking Test</h3>
+                    <p>Test the ad blocker with known ad and tracker domains</p>
+                    <button class="test-button warning" onclick="testBlocking()">
+                        🧪 Test Blocking
+                    </button>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Statistics</h3>
+                    <p>Clear statistics and reset counters</p>
+                    <button class="test-button danger" onclick="clearStats()">
+                        📊 Clear Statistics
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Demo Section -->
+        <div class="test-section">
+            <h2>📺 Ad Blocking Demonstration</h2>
+            <div class="ad-demo">
+                <h3>Simulated Ad Content</h3>
+                <p>These elements simulate common ad placements that should be blocked</p>
+                
+                <div class="ad-placeholder" id="ad-1">
+                    🎯 Advertisement Space 1
+                </div>
+                
+                <div class="ad-placeholder" id="ad-2">
+                    📢 Promotional Content
+                </div>
+                
+                <div class="ad-placeholder" id="ad-3">
+                    💰 Sponsored Message
+                </div>
+                
+                <button class="test-button secondary" onclick="simulateAds()">
+                    🔄 Simulate New Ads
+                </button>
+            </div>
+        </div>
+
+        <!-- Network Test Section -->
+        <div class="test-section">
+            <h2>🌐 Network Request Testing</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Fetch API Test</h3>
+                    <p>Test blocking of fetch requests to tracking domains</p>
+                    <button class="test-button" onclick="testFetchBlocking()">
+                        🌐 Test Fetch Blocking
+                    </button>
+                </div>
+                
+                <div class="test-item">
+                    <h3>XHR Test</h3>
+                    <p>Test blocking of XMLHttpRequest to tracking domains</p>
+                    <button class="test-button" onclick="testXHRBlocking()">
+                        📡 Test XHR Blocking
+                    </button>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Image Loading Test</h3>
+                    <p>Test blocking of image requests from ad domains</p>
+                    <button class="test-button" onclick="testImageBlocking()">
+                        🖼️ Test Image Blocking
+                    </button>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Script Loading Test</h3>
+                    <p>Test blocking of script requests from tracking domains</p>
+                    <button class="test-button" onclick="testScriptBlocking()">
+                        📜 Test Script Blocking
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Display -->
+        <div class="log-container">
+            <h3>📝 Activity Log</h3>
+            <div class="log-content" id="log-content">
+                <div class="log-entry info">Ad Blocker Test Suite initialized...</div>
+                <div class="log-entry info">Ready to test comprehensive ad blocking capabilities</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Ad Blocker Access Button -->
+    <div id="floating-ad-blocker-btn" style="
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 9999;
+        transition: all 0.3s ease;
+        font-size: 24px;
+        color: white;
+        border: 2px solid #fff;
+    " title="Open Ad Blocker UI" onclick="openAdBlockerUI()">
+        🚫
+    </div>
+
+    <!-- Load the ad blocker modules -->
+    <script type="module">
+        // Import and initialize the ad blocker modules
+        import './src/filter-lists.js';
+        import './src/aggressive-ad-blocker.js';
+        import './src/ad-blocker-ui.js';
+        
+        // Wait for modules to load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('🔍 Starting test suite initialization...');
+                initializeTestSuite();
+            }, 1000);
+        });
+    </script>
+
+    <script>
+        let logContent;
+        let adBlocker;
+        let filterListManager;
+        let adBlockerUI;
+
+        function initializeTestSuite() {
+            console.log('🔧 Initializing test suite...');
+            logContent = document.getElementById('log-content');
+            adBlocker = window.adBlocker;
+            filterListManager = window.filterListManager;
+            adBlockerUI = window.adBlockerUI;
+            
+            console.log('🔍 Global objects found:', {
+                adBlocker: !!adBlocker,
+                filterListManager: !!filterListManager,
+                adBlockerUI: !!adBlockerUI
+            });
+            
+            if (adBlocker) {
+                log('Ad Blocker initialized successfully', 'success');
+                startStatsUpdate();
+            } else {
+                log('Ad Blocker not available', 'error');
+            }
+            
+            if (filterListManager) {
+                log('Filter List Manager initialized successfully', 'success');
+            } else {
+                log('Filter List Manager not available', 'warning');
+            }
+            
+            if (adBlockerUI) {
+                log('Ad Blocker UI initialized successfully', 'success');
+                // Automatically show the ad blocker UI after a short delay
+                setTimeout(() => {
+                    console.log('🚀 Attempting to show ad blocker UI...');
+                    try {
+                        adBlockerUI.show();
+                        log('Ad Blocker UI automatically displayed', 'success');
+                        console.log('✅ Ad Blocker UI shown successfully');
+                    } catch (error) {
+                        console.error('❌ Error showing ad blocker UI:', error);
+                        log('Error showing Ad Blocker UI: ' + error.message, 'error');
+                    }
+                }, 1500);
+            } else {
+                log('Ad Blocker UI not available', 'warning');
+            }
+        }
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContent.appendChild(entry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        function startStatsUpdate() {
+            setInterval(() => {
+                if (adBlocker) {
+                    const stats = adBlocker.getStats();
+                    document.getElementById('ads-blocked').textContent = stats.adsBlocked || 0;
+                    document.getElementById('trackers-blocked').textContent = stats.trackersBlocked || 0;
+                    document.getElementById('scripts-blocked').textContent = stats.scriptsBlocked || 0;
+                    
+                    if (stats.filterListRules) {
+                        document.getElementById('filter-rules').textContent = stats.filterListRules;
+                    }
+                }
+            }, 1000);
+        }
+
+        function openAdBlockerUI() {
+            if (adBlockerUI) {
+                adBlockerUI.show();
+                log('Ad Blocker UI opened', 'info');
+            } else {
+                log('Ad Blocker UI not available', 'error');
+            }
+        }
+
+        async function updateFilterLists() {
+            if (adBlocker) {
+                try {
+                    await adBlocker.updateFilterLists();
+                    log('Filter lists updated successfully', 'success');
+                } catch (e) {
+                    log('Failed to update filter lists: ' + e.message, 'error');
+                }
+            } else {
+                log('Ad Blocker not available', 'error');
+            }
+        }
+
+        function testBlocking() {
+            if (!adBlocker) {
+                log('Ad Blocker not available', 'error');
+                return;
+            }
+
+            const testUrls = [
+                'https://doubleclick.net/test',
+                'https://google-analytics.com/test',
+                'https://facebook.net/test',
+                'https://googletagmanager.com/test',
+                'https://adnxs.com/test',
+                'https://taboola.com/test'
+            ];
+
+            let blockedCount = 0;
+            testUrls.forEach(url => {
+                if (adBlocker.isBlocked(url)) {
+                    blockedCount++;
+                    log(`✅ Blocked: ${url}`, 'success');
+                } else {
+                    log(`❌ Not blocked: ${url}`, 'warning');
+                }
+            });
+
+            const message = `Blocking test completed: ${blockedCount}/${testUrls.length} URLs blocked`;
+            log(message, blockedCount === testUrls.length ? 'success' : 'warning');
+        }
+
+        function clearStats() {
+            if (adBlocker) {
+                adBlocker.clearStats();
+                log('Statistics cleared', 'success');
+            } else {
+                log('Ad Blocker not available', 'error');
+            }
+        }
+
+        function simulateAds() {
+            const adIds = ['ad-1', 'ad-2', 'ad-3'];
+            adIds.forEach(id => {
+                const ad = document.getElementById(id);
+                if (ad) {
+                    ad.className = 'ad-placeholder';
+                    ad.textContent = '🎯 New Advertisement (' + new Date().toLocaleTimeString() + ')';
+                }
+            });
+            log('Simulated new ad content', 'info');
+        }
+
+        async function testFetchBlocking() {
+            if (!adBlocker) {
+                log('Ad Blocker not available', 'error');
+                return;
+            }
+
+            const testUrls = [
+                'https://doubleclick.net/api/test',
+                'https://google-analytics.com/collect',
+                'https://facebook.net/tr'
+            ];
+
+            for (const url of testUrls) {
+                try {
+                    if (adBlocker.isBlocked(url)) {
+                        log(`✅ Fetch blocked: ${url}`, 'success');
+                    } else {
+                        log(`❌ Fetch not blocked: ${url}`, 'warning');
+                    }
+                } catch (e) {
+                    log(`Error testing fetch: ${e.message}`, 'error');
+                }
+            }
+        }
+
+        function testXHRBlocking() {
+            if (!adBlocker) {
+                log('Ad Blocker not available', 'error');
+                return;
+            }
+
+            const testUrls = [
+                'https://adnxs.com/px',
+                'https://pubmatic.com/track',
+                'https://adtech.com/pixel'
+            ];
+
+            testUrls.forEach(url => {
+                if (adBlocker.isBlocked(url)) {
+                    log(`✅ XHR blocked: ${url}`, 'success');
+                } else {
+                    log(`❌ XHR not blocked: ${url}`, 'warning');
+                }
+            });
+        }
+
+        function testImageBlocking() {
+            if (!adBlocker) {
+                log('Ad Blocker not available', 'error');
+                return;
+            }
+
+            const testUrls = [
+                'https://adsystem.com/banner.jpg',
+                'https://adtech.com/creative.png',
+                'https://doubleclick.net/ad.gif'
+            ];
+
+            testUrls.forEach(url => {
+                if (adBlocker.isBlocked(url)) {
+                    log(`✅ Image blocked: ${url}`, 'success');
+                } else {
+                    log(`❌ Image not blocked: ${url}`, 'warning');
+                }
+            });
+        }
+
+        function testScriptBlocking() {
+            if (!adBlocker) {
+                log('Ad Blocker not available', 'error');
+                return;
+            }
+
+            const testUrls = [
+                'https://googletagmanager.com/gtm.js',
+                'https://facebook.net/sdk.js',
+                'https://analytics.google.com/ga.js'
+            ];
+
+            testUrls.forEach(url => {
+                if (adBlocker.isBlocked(url)) {
+                    log(`✅ Script blocked: ${url}`, 'success');
+                } else {
+                    log(`❌ Script not blocked: ${url}`, 'warning');
+                }
+            });
+        }
+
+        // Global functions for onclick handlers
+        window.openAdBlockerUI = openAdBlockerUI;
+        window.updateFilterLists = updateFilterLists;
+        window.testBlocking = testBlocking;
+        window.clearStats = clearStats;
+        window.simulateAds = simulateAds;
+        window.testFetchBlocking = testFetchBlocking;
+        window.testXHRBlocking = testXHRBlocking;
+        window.testImageBlocking = testImageBlocking;
+        window.testScriptBlocking = testScriptBlocking;
+    </script>
+</body>
+</html>

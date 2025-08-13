@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tor Network Test (Browser Context)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-family: monospace;
+            background: #333;
+            border: 1px solid #555;
+        }
+        .status.success { background: rgba(40, 167, 69, 0.2); border-color: #28a745; color: #28a745; }
+        .status.error { background: rgba(220, 53, 69, 0.2); border-color: #dc3545; color: #dc3545; }
+        .status.info { background: rgba(0, 123, 255, 0.2); border-color: #007bff; color: #007bff; }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #007bff, #28a745);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            color: #ccc;
+            font-size: 1.1em;
+        }
+        .instruction {
+            background: rgba(0, 123, 255, 0.1);
+            border: 1px solid #007bff;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .instruction h3 {
+            margin: 0 0 10px 0;
+            color: #007bff;
+        }
+        .instruction ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instruction li {
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌐 Tor Network Test</h1>
+        <p>Test the Tor Network functionality within the browser context</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 How to Test Tor Network</h2>
+        <div class="instruction">
+            <h3>🚀 Testing Steps:</h3>
+            <ol>
+                <li><strong>Open Advanced Settings:</strong> Press <code>Ctrl+F6</code> or click the ⚙️ Settings button</li>
+                <li><strong>Navigate to Tor Network:</strong> Look for the "🌐 Tor Network (VPN-like Protection)" section</li>
+                <li><strong>Test Toggle:</strong> Use the toggle switch to enable/disable Tor Network</li>
+                <li><strong>Test Controls:</strong> Try the Test Connection, Refresh Circuit, and View Circuit buttons</li>
+                <li><strong>Test Configuration:</strong> Change entry node and circuit length settings</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Browser Context Tests</h2>
+        <p>These tests will only work when running inside the browser application:</p>
+        <button class="test-button" onclick="testBrowserContext()">Test Browser Context</button>
+        <button class="test-button" onclick="testTorNetworkAccess()">Test Tor Network Access</button>
+        <button class="test-button" onclick="testAdvancedSettings()">Test Advanced Settings</button>
+        <div id="test-results" class="status info">Click a test button to see results...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="console-output" style="background: #000; color: #0f0; padding: 10px; border-radius: 4px; font-family: monospace; height: 300px; overflow-y: auto;"></div>
+        <button class="test-button" onclick="clearConsole()">Clear Console</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Troubleshooting</h2>
+        <div class="instruction">
+            <h3>If Tor Network is not working:</h3>
+            <ol>
+                <li><strong>Check Console:</strong> Open browser console (F12) and look for error messages</li>
+                <li><strong>Verify Initialization:</strong> Look for "🌐 Tor Network fallback object made globally available" message</li>
+                <li><strong>Check Advanced Settings:</strong> Ensure Advanced Settings opens without errors</li>
+                <li><strong>Restart Browser:</strong> Sometimes a restart is needed after code changes</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const consoleEl = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleEl.innerHTML += `[${timestamp}] ${message}<br>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            console.log(message);
+        }
+
+        function testBrowserContext() {
+            const resultsEl = document.getElementById('test-results');
+            log('🧪 Testing browser context...');
+            
+            try {
+                // Check if we're in a browser-like environment
+                const hasWindow = typeof window !== 'undefined';
+                const hasDocument = typeof document !== 'undefined';
+                const hasConsole = typeof console !== 'undefined';
+                
+                log(`✅ Environment check: window=${hasWindow}, document=${hasDocument}, console=${hasConsole}`);
+                
+                if (hasWindow && hasDocument && hasConsole) {
+                    resultsEl.textContent = '✅ Browser context detected';
+                    resultsEl.className = 'status success';
+                } else {
+                    resultsEl.textContent = '❌ Not in browser context';
+                    resultsEl.className = 'status error';
+                }
+            } catch (error) {
+                log(`❌ Error testing browser context: ${error.message}`);
+                resultsEl.textContent = `❌ Error: ${error.message}`;
+                resultsEl.className = 'status error';
+            }
+        }
+
+        function testTorNetworkAccess() {
+            const resultsEl = document.getElementById('test-results');
+            log('🧪 Testing Tor Network access...');
+            
+            try {
+                // Check if torNetwork exists in global scope
+                if (typeof window !== 'undefined' && window.torNetwork) {
+                    log('✅ window.torNetwork found');
+                    
+                    // Check if it has the expected methods
+                    const hasIsEnabled = typeof window.torNetwork.isEnabled === 'function';
+                    const hasGetStatus = typeof window.torNetwork.getStatus === 'function';
+                    const hasEnable = typeof window.torNetwork.enable === 'function';
+                    const hasDisable = typeof window.torNetwork.disable === 'function';
+                    
+                    log(`✅ Methods check: isEnabled=${hasIsEnabled}, getStatus=${hasGetStatus}, enable=${hasEnable}, disable=${hasDisable}`);
+                    
+                    if (hasIsEnabled && hasGetStatus && hasEnable && hasDisable) {
+                        // Test a simple method call
+                        try {
+                            const status = window.torNetwork.getStatus();
+                            log(`✅ getStatus() call successful: ${JSON.stringify(status)}`);
+                            
+                            resultsEl.textContent = '✅ Tor Network fully accessible and functional';
+                            resultsEl.className = 'status success';
+                        } catch (methodError) {
+                            log(`❌ Method call failed: ${methodError.message}`);
+                            resultsEl.textContent = '⚠️ Tor Network accessible but methods may have issues';
+                            resultsEl.className = 'status info';
+                        }
+                    } else {
+                        resultsEl.textContent = '⚠️ Tor Network found but missing expected methods';
+                        resultsEl.className = 'status info';
+                    }
+                } else {
+                    log('❌ window.torNetwork not found');
+                    resultsEl.textContent = '❌ Tor Network not accessible (may not be running in browser context)';
+                    resultsEl.className = 'status error';
+                }
+            } catch (error) {
+                log(`❌ Error testing Tor Network access: ${error.message}`);
+                resultsEl.textContent = `❌ Error: ${error.message}`;
+                resultsEl.className = 'status error';
+            }
+        }
+
+        function testAdvancedSettings() {
+            const resultsEl = document.getElementById('test-results');
+            log('🧪 Testing Advanced Settings access...');
+            
+            if (typeof showAdvancedSettings === 'function') {
+                log('✅ showAdvancedSettings function found');
+                try {
+                    showAdvancedSettings();
+                    log('✅ Advanced Settings opened successfully');
+                    resultsEl.textContent = '✅ Advanced Settings working - Tor Network section should be visible';
+                    resultsEl.className = 'status success';
+                } catch (error) {
+                    log(`❌ Error opening Advanced Settings: ${error.message}`);
+                    resultsEl.textContent = `❌ Advanced Settings error: ${error.message}`;
+                    resultsEl.className = 'status error';
+                }
+            } else {
+                log('❌ showAdvancedSettings function not found');
+                resultsEl.textContent = '❌ Advanced Settings function not available (not running in browser context)';
+                resultsEl.className = 'status error';
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            log('🚀 Page loaded in browser context');
+            log('🔧 Testing for Tor Network availability...');
+            
+            // Test Tor Network access after a short delay
+            setTimeout(() => {
+                testTorNetworkAccess();
+            }, 500);
+        });
+
+        // Log any errors
+        window.addEventListener('error', (event) => {
+            log(`❌ JavaScript error: ${event.message}`);
+        });
+    </script>
+</body>
+</html>

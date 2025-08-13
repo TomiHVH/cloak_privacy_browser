@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tor Network Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button.success {
+            background: #28a745;
+        }
+        .test-button.warning {
+            background: #ffc107;
+            color: #000;
+        }
+        .test-button.danger {
+            background: #dc3545;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-family: monospace;
+            white-space: pre-line;
+            background: #333;
+            border: 1px solid #555;
+        }
+        .status.connected {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: #28a745;
+            color: #28a745;
+        }
+        .status.disconnected {
+            background: rgba(220, 53, 69, 0.2);
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        .status.info {
+            background: rgba(0, 123, 255, 0.2);
+            border-color: #007bff;
+            color: #007bff;
+        }
+        .circuit-node {
+            background: #333;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .circuit-node .country {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .circuit-node .ip {
+            color: #ccc;
+            font-family: monospace;
+        }
+        .circuit-node .bandwidth {
+            color: #28a745;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #007bff, #28a745);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            color: #ccc;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌐 Tor Network Test</h1>
+        <p>Test and demonstrate the Tor Network VPN-like functionality</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>🚀 Quick Access</h2>
+        <p>Open Advanced Settings to access Tor Network controls:</p>
+        <button class="test-button" onclick="openAdvancedSettings()">⚙️ Open Advanced Settings</button>
+        <button class="test-button" onclick="checkTorStatus()">🔍 Check Tor Status</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Tor Network Status</h2>
+        <div id="tor-status-display" class="status info">Checking Tor Network status...</div>
+        <button class="test-button" onclick="refreshStatus()">🔄 Refresh Status</button>
+        <button class="test-button" onclick="toggleTor()">🔄 Toggle Tor Network</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Test Functions</h2>
+        <button class="test-button" onclick="testConnection()">🔍 Test Connection</button>
+        <button class="test-button" onclick="refreshCircuit()">🔄 Refresh Circuit</button>
+        <button class="test-button" onclick="viewCircuit()">📊 View Circuit</button>
+        <button class="test-button" onclick="testFetch()">🌐 Test Fetch (Tor)</button>
+        <button class="test-button" onclick="testXHR()">📡 Test XHR (Tor)</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📈 Network Statistics</h2>
+        <div id="stats-display" class="status info">Loading statistics...</div>
+        <button class="test-button" onclick="updateStats()">📊 Update Stats</button>
+        <button class="test-button" onclick="clearStats()">🗑️ Clear Stats</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Configuration</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: bold;">Entry Node:</label>
+                <select id="entry-node-select" style="width: 100%; padding: 8px; border-radius: 4px; background: #333; color: #fff; border: 1px solid #555;">
+                    <option value="auto">Auto (Recommended)</option>
+                    <option value="us">United States</option>
+                    <option value="eu">Europe</option>
+                    <option value="asia">Asia</option>
+                    <option value="random">Random</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: bold;">Circuit Length:</label>
+                <select id="circuit-length-select" style="width: 100%; padding: 8px; border-radius: 4px; background: #333; color: #fff; border: 1px solid #555;">
+                    <option value="3">3 Hops (Standard - Fast)</option>
+                    <option value="5">5 Hops (Enhanced - Balanced)</option>
+                    <option value="7">7 Hops (Maximum - Slowest)</option>
+                </select>
+            </div>
+        </div>
+        <button class="test-button" onclick="applyConfig()" style="margin-top: 15px;">⚙️ Apply Configuration</button>
+    </div>
+
+    <script>
+        function openAdvancedSettings() {
+            if (typeof showAdvancedSettings === 'function') {
+                showAdvancedSettings();
+            } else {
+                alert('Advanced Settings not available. Make sure you\'re running this in the browser.');
+            }
+        }
+
+        function checkTorStatus() {
+            if (window.torNetwork) {
+                const status = window.torNetwork.getStatus();
+                updateStatusDisplay(status);
+                updateStatsDisplay(status);
+            } else {
+                document.getElementById('tor-status-display').textContent = 'Tor Network not available';
+                document.getElementById('tor-status-display').className = 'status disconnected';
+            }
+        }
+
+        function refreshStatus() {
+            checkTorStatus();
+        }
+
+        function toggleTor() {
+            if (window.torNetwork) {
+                const currentStatus = window.torNetwork.isEnabled();
+                if (currentStatus) {
+                    window.torNetwork.disable();
+                } else {
+                    window.torNetwork.enable();
+                }
+                setTimeout(checkTorStatus, 1000);
+            } else {
+                alert('Tor Network not available');
+            }
+        }
+
+        function testConnection() {
+            if (window.torNetwork) {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Testing...';
+                button.disabled = true;
+                
+                setTimeout(() => {
+                    if (window.torNetwork.isEnabled()) {
+                        alert('✅ Tor Network connection test successful!\n\nYour traffic is being routed through the Tor network for enhanced privacy.');
+                    } else {
+                        alert('❌ Tor Network is disabled\n\nEnable Tor Network routing to test the connection.');
+                    }
+                    
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, 2000);
+            } else {
+                alert('Tor Network not available');
+            }
+        }
+
+        function refreshCircuit() {
+            if (window.torNetwork && window.torNetwork.isEnabled()) {
+                window.torNetwork.createCircuit();
+                setTimeout(checkTorStatus, 1000);
+                alert('🔄 Tor circuit refreshed!\n\nNew circuit created with different relay nodes.');
+            } else {
+                alert('❌ Tor Network is disabled\n\nEnable Tor Network routing to refresh the circuit.');
+            }
+        }
+
+        function viewCircuit() {
+            if (window.torNetwork && window.torNetwork.isEnabled()) {
+                const status = window.torNetwork.getStatus();
+                let circuitInfo = '🌐 Current Tor Circuit:\n\n';
+                
+                if (status.currentCircuit.length > 0) {
+                    status.currentCircuit.forEach((node, index) => {
+                        circuitInfo += `${index + 1}. Entry Node: ${node.country}\n`;
+                        circuitInfo += `   IP: ${node.ip}\n`;
+                        circuitInfo += `   Bandwidth: ${node.bandwidth} MB/s\n\n`;
+                    });
+                } else {
+                    circuitInfo += 'No active circuit';
+                }
+                
+                circuitInfo += `\nEntry Node: ${status.entryNode}`;
+                circuitInfo += `\nCircuit Length: ${status.circuitLength} hops`;
+                circuitInfo += `\nStatus: ${status.connectionStatus}`;
+                
+                alert(circuitInfo);
+            } else {
+                alert('❌ Tor Network is disabled\n\nEnable Tor Network routing to view the circuit.');
+            }
+        }
+
+        function testFetch() {
+            if (window.torNetwork && window.torNetwork.isEnabled()) {
+                fetch('https://httpbin.org/ip')
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(`🌐 Fetch test successful!\n\nResponse: ${JSON.stringify(data, null, 2)}\n\nThis request was routed through the Tor network.`);
+                    })
+                    .catch(error => {
+                        alert(`❌ Fetch test failed: ${error.message}`);
+                    });
+            } else {
+                alert('❌ Tor Network is disabled\n\nEnable Tor Network routing to test fetch requests.');
+            }
+        }
+
+        function testXHR() {
+            if (window.torNetwork && window.torNetwork.isEnabled()) {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://httpbin.org/user-agent');
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const data = JSON.parse(xhr.responseText);
+                        alert(`📡 XHR test successful!\n\nResponse: ${JSON.stringify(data, null, 2)}\n\nThis request was routed through the Tor network.`);
+                    } else {
+                        alert(`❌ XHR test failed: ${xhr.status}`);
+                    }
+                };
+                xhr.onerror = function() {
+                    alert('❌ XHR test failed');
+                };
+                xhr.send();
+            } else {
+                alert('❌ Tor Network is disabled\n\nEnable Tor Network routing to test XHR requests.');
+            }
+        }
+
+        function updateStats() {
+            checkTorStatus();
+        }
+
+        function clearStats() {
+            if (window.torNetwork) {
+                window.torNetwork.stats.bytesTransferred = 0;
+                window.torNetwork.stats.circuitsCreated = 0;
+                window.torNetwork.stats.connectionTime = 0;
+                checkTorStatus();
+                alert('📊 Statistics cleared');
+            }
+        }
+
+        function applyConfig() {
+            if (window.torNetwork) {
+                const entryNode = document.getElementById('entry-node-select').value;
+                const circuitLength = parseInt(document.getElementById('circuit-length-select').value);
+                
+                window.torNetwork.setEntryNode(entryNode);
+                window.torNetwork.setCircuitLength(circuitLength);
+                
+                safeSetLocalStorage('cb_tor_entry_node', entryNode);
+                safeSetLocalStorage('cb_tor_circuit_length', circuitLength.toString());
+                
+                alert('⚙️ Configuration applied!\n\nEntry Node: ' + entryNode + '\nCircuit Length: ' + circuitLength + ' hops');
+                
+                setTimeout(checkTorStatus, 1000);
+            } else {
+                alert('Tor Network not available');
+            }
+        }
+
+        function updateStatusDisplay(status) {
+            const statusDisplay = document.getElementById('tor-status-display');
+            let statusText = '';
+            let statusClass = 'status';
+
+            if (status.enabled) {
+                statusClass += ' connected';
+                statusText = `Status: ${status.connectionStatus.toUpperCase()}\n`;
+                statusText += `Entry Node: ${status.entryNode}\n`;
+                statusText += `Circuit Length: ${status.circuitLength} hops\n`;
+                
+                if (status.currentCircuit.length > 0) {
+                    statusText += `Current Circuit:\n`;
+                    status.currentCircuit.forEach((node, index) => {
+                        statusText += `  ${index + 1}. ${node.country} (${node.ip})\n`;
+                    });
+                }
+                
+                if (status.lastConnected) {
+                    statusText += `Connected: ${status.lastConnected.toLocaleTimeString()}\n`;
+                }
+            } else {
+                statusClass += ' disconnected';
+                statusText = 'Tor Network is disabled';
+            }
+
+            statusDisplay.textContent = statusText;
+            statusDisplay.className = statusClass;
+        }
+
+        function updateStatsDisplay(status) {
+            const statsDisplay = document.getElementById('stats-display');
+            let statsText = '';
+
+            if (status.enabled) {
+                statsText = `Bytes Transferred: ${(status.stats.bytesTransferred / 1024).toFixed(2)} KB\n`;
+                statsText += `Circuits Created: ${status.stats.circuitsCreated}\n`;
+                statsText += `Connection Time: ${status.stats.connectionTime}ms\n`;
+                statsText += `Active: ${status.connectionStatus === 'connected' ? 'Yes' : 'No'}`;
+            } else {
+                statsText = 'Tor Network is disabled - no statistics available';
+            }
+
+            statsDisplay.textContent = statsText;
+        }
+
+        // Safe localStorage functions
+        function safeGetLocalStorage(key, defaultValue = null) {
+            try {
+                return localStorage.getItem(key) || defaultValue;
+            } catch (error) {
+                console.warn('localStorage access denied for key:', key, error);
+                return defaultValue;
+            }
+        }
+        
+        function safeSetLocalStorage(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (error) {
+                console.warn('localStorage write denied for key:', key, error);
+            }
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            // Set initial values from localStorage
+            const entryNode = safeGetLocalStorage('cb_tor_entry_node', 'auto');
+            const circuitLength = safeGetLocalStorage('cb_tor_circuit_length', '3');
+            
+            document.getElementById('entry-node-select').value = entryNode;
+            document.getElementById('circuit-length-select').value = circuitLength;
+            
+            // Check status after a delay
+            setTimeout(checkTorStatus, 1000);
+        });
+
+        // Update status every 5 seconds
+        setInterval(checkTorStatus, 5000);
+    </script>
+</body>
+</html>

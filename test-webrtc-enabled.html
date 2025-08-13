@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Enabled Test - Minimal Browser</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔓 WebRTC Enabled Test</h1>
+        <p>This page tests that WebRTC is now working in Minimal Browser. WebRTC protection is disabled by default, allowing full WebRTC functionality.</p>
+        
+        <div class="test-section">
+            <h3>WebRTC Status</h3>
+            <p>Click the button below to test if WebRTC is working:</p>
+            <button class="test-button" onclick="testWebRTC()">Test WebRTC</button>
+            <div id="results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>What This Means</h3>
+            <p>✅ <strong>WebRTC is now enabled</strong> - You can use:</p>
+            <ul>
+                <li>Video calling applications (Zoom, Teams, etc.)</li>
+                <li>Voice chat in games</li>
+                <li>Screen sharing</li>
+                <li>Peer-to-peer file sharing</li>
+                <li>Real-time communication apps</li>
+            </ul>
+            
+            <p>🔒 <strong>Privacy Protection Available</strong> - You can still enable WebRTC protection in Settings → WebRTC Protection if you want to prevent IP leaks.</p>
+        </div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function addResult(message, type = 'info') {
+            const result = document.createElement('div');
+            result.className = `result ${type}`;
+            result.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(result);
+        }
+
+        function testWebRTC() {
+            addResult('Testing WebRTC functionality...', 'info');
+            
+            try {
+                // Test RTCPeerConnection
+                const pc = new RTCPeerConnection();
+                addResult('✅ RTCPeerConnection created successfully!', 'success');
+                
+                // Test basic WebRTC operations
+                pc.createOffer()
+                    .then(offer => {
+                        addResult('✅ createOffer() working - WebRTC is fully functional!', 'success');
+                        addResult(`Offer SDP: ${offer.sdp.substring(0, 100)}...`, 'info');
+                    })
+                    .catch(e => {
+                        addResult(`❌ createOffer() failed: ${e.message}`, 'error');
+                    });
+                
+                // Test data channels
+                try {
+                    const channel = pc.createDataChannel('test');
+                    addResult('✅ Data channels working!', 'success');
+                } catch (e) {
+                    addResult(`⚠️ Data channels failed: ${e.message}`, 'error');
+                }
+                
+                pc.close();
+                
+            } catch (e) {
+                addResult(`❌ WebRTC test failed: ${e.message}`, 'error');
+                addResult('This means WebRTC protection might still be enabled or there\'s another issue.', 'error');
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            addResult('Page loaded. WebRTC should be working now.', 'info');
+        });
+    </script>
+</body>
+</html>

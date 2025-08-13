@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tor Network Initialization Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-family: monospace;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+        .status.success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .status.error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .status.info { background: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Tor Network Initialization Test</h1>
+    
+    <div class="test-section">
+        <h2>🧪 Test Tor Network Access</h2>
+        <button class="test-button" onclick="testImmediateAccess()">Test Immediate Access</button>
+        <button class="test-button" onclick="testFunctionCalls()">Test Function Calls</button>
+        <button class="test-button" onclick="testAdvancedSettings()">Test Advanced Settings</button>
+        <div id="test-results" class="status info">Click a test button to see results...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="console-output" style="background: #000; color: #0f0; padding: 10px; border-radius: 4px; font-family: monospace; height: 300px; overflow-y: auto;"></div>
+        <button class="test-button" onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <script>
+        function log(message) {
+            const consoleEl = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleEl.innerHTML += `[${timestamp}] ${message}<br>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            console.log(message);
+        }
+
+        function testImmediateAccess() {
+            const resultsEl = document.getElementById('test-results');
+            log('🧪 Testing immediate Tor Network access...');
+            
+            try {
+                // Check if torNetwork exists immediately
+                if (typeof window.torNetwork !== 'undefined') {
+                    log('✅ window.torNetwork exists immediately');
+                    
+                    if (window.torNetwork) {
+                        log('✅ window.torNetwork is not null/undefined');
+                        
+                        // Check basic properties
+                        const hasEnabled = 'enabled' in window.torNetwork;
+                        const hasIsEnabled = typeof window.torNetwork.isEnabled === 'function';
+                        const hasGetStatus = typeof window.torNetwork.getStatus === 'function';
+                        
+                        log(`✅ Properties check: enabled=${hasEnabled}, isEnabled=${hasIsEnabled}, getStatus=${hasGetStatus}`);
+                        
+                        resultsEl.textContent = '✅ Tor Network accessible immediately';
+                        resultsEl.className = 'status success';
+                    } else {
+                        log('❌ window.torNetwork is null/undefined');
+                        resultsEl.textContent = '❌ Tor Network is null/undefined';
+                        resultsEl.className = 'status error';
+                    }
+                } else {
+                    log('❌ window.torNetwork does not exist');
+                    resultsEl.textContent = '❌ Tor Network not found in window object';
+                    resultsEl.className = 'status error';
+                }
+            } catch (error) {
+                log(`❌ Error testing immediate access: ${error.message}`);
+                resultsEl.textContent = `❌ Error: ${error.message}`;
+                resultsEl.className = 'status error';
+            }
+        }
+
+        function testFunctionCalls() {
+            const resultsEl = document.getElementById('test-results');
+            log('🧪 Testing Tor Network function calls...');
+            
+            try {
+                if (window.torNetwork) {
+                    // Test isEnabled
+                    const enabled = window.torNetwork.isEnabled();
+                    log(`✅ isEnabled() called successfully: ${enabled}`);
+                    
+                    // Test getStatus
+                    const status = window.torNetwork.getStatus();
+                    log(`✅ getStatus() called successfully: ${JSON.stringify(status)}`);
+                    
+                    // Test enable (should work even if not fully initialized)
+                    window.torNetwork.enable();
+                    log('✅ enable() called successfully');
+                    
+                    // Test disable
+                    window.torNetwork.disable();
+                    log('✅ disable() called successfully');
+                    
+                    resultsEl.textContent = '✅ All Tor Network functions working';
+                    resultsEl.className = 'status success';
+                } else {
+                    log('❌ Tor Network not available');
+                    resultsEl.textContent = '❌ Tor Network not available';
+                    resultsEl.className = 'status error';
+                }
+            } catch (error) {
+                log(`❌ Error testing function calls: ${error.message}`);
+                resultsEl.textContent = `❌ Function call error: ${error.message}`;
+                resultsEl.className = 'status error';
+            }
+        }
+
+        function testAdvancedSettings() {
+            const resultsEl = document.getElementById('test-results');
+            log('🧪 Testing Advanced Settings access...');
+            
+            if (typeof showAdvancedSettings === 'function') {
+                log('✅ showAdvancedSettings function found');
+                try {
+                    showAdvancedSettings();
+                    log('✅ Advanced Settings opened successfully');
+                    resultsEl.textContent = '✅ Advanced Settings working';
+                    resultsEl.className = 'status success';
+                } catch (error) {
+                    log(`❌ Error opening Advanced Settings: ${error.message}`);
+                    resultsEl.textContent = `❌ Advanced Settings error: ${error.message}`;
+                    resultsEl.className = 'status error';
+                }
+            } else {
+                log('❌ showAdvancedSettings function not found');
+                resultsEl.textContent = '❌ Advanced Settings function not available';
+                resultsEl.className = 'status error';
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            log('🚀 Page loaded, testing Tor Network initialization...');
+            
+            // Test immediate access
+            setTimeout(() => {
+                testImmediateAccess();
+            }, 100);
+        });
+
+        // Log any errors
+        window.addEventListener('error', (event) => {
+            log(`❌ JavaScript error: ${event.message}`);
+        });
+    </script>
+</body>
+</html>

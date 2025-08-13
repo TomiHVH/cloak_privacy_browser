@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Ad Blocker Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🚫 Simple Ad Blocker Test</h1>
+    
+    <div class="test-section">
+        <h2>Ad Blocker Status</h2>
+        <div id="status-display" class="status info">Checking ad blocker status...</div>
+        <button class="test-button" onclick="checkStatus()">Check Status</button>
+        <button class="test-button" onclick="toggleAdBlocker()">Toggle Ad Blocker</button>
+        <button class="test-button" onclick="clearStats()">Clear Stats</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Requests</h2>
+        <button class="test-button" onclick="testFetch()">Test Fetch to Ad Domain</button>
+        <button class="test-button" onclick="testXHR()">Test XHR to Ad Domain</button>
+        <button class="test-button" onclick="testImage()">Test Ad Image</button>
+        <button class="test-button" onclick="testScript()">Test Ad Script</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Statistics</h2>
+        <div id="stats-display">Loading...</div>
+        <button class="test-button" onclick="updateStats()">Update Stats</button>
+    </div>
+
+    <script>
+        function checkStatus() {
+            const statusEl = document.getElementById('status-display');
+            if (window.adBlocker) {
+                const enabled = window.adBlocker.enabled;
+                const level = window.adBlocker.blockingLevel;
+                statusEl.textContent = `Ad Blocker: ${enabled ? '✅ Enabled' : '❌ Disabled'} (${level} mode)`;
+                statusEl.className = `status ${enabled ? 'success' : 'error'}`;
+            } else {
+                statusEl.textContent = '❌ Ad Blocker not available';
+                statusEl.className = 'status error';
+            }
+        }
+
+        function toggleAdBlocker() {
+            if (window.adBlocker) {
+                if (window.adBlocker.enabled) {
+                    window.adBlocker.disable();
+                } else {
+                    window.adBlocker.enable();
+                }
+                checkStatus();
+                updateStats();
+            }
+        }
+
+        function clearStats() {
+            if (window.adBlocker) {
+                window.adBlocker.clearStats();
+                updateStats();
+            }
+        }
+
+        function testFetch() {
+            if (window.adBlocker) {
+                fetch('https://doubleclick.net/test')
+                    .then(response => console.log('Fetch succeeded (should be blocked)'))
+                    .catch(error => console.log('Fetch blocked as expected:', error.message));
+            }
+        }
+
+        function testXHR() {
+            if (window.adBlocker) {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://google-analytics.com/test');
+                xhr.send();
+            }
+        }
+
+        function testImage() {
+            if (window.adBlocker) {
+                const img = document.createElement('img');
+                img.src = 'https://adsystem.com/banner.jpg';
+                document.body.appendChild(img);
+                console.log('Image element created (should be blocked if ad blocker enabled)');
+            }
+        }
+
+        function testScript() {
+            if (window.adBlocker) {
+                const script = document.createElement('script');
+                script.src = 'https://googletagmanager.com/gtm.js';
+                document.body.appendChild(script);
+                console.log('Script element created (should be blocked if ad blocker enabled)');
+            }
+        }
+
+        function updateStats() {
+            const statsEl = document.getElementById('stats-display');
+            if (window.adBlocker) {
+                const stats = window.adBlocker.getStats();
+                const filterStats = window.adBlocker.getFilterListStats();
+                statsEl.innerHTML = `
+                    <strong>Ads Blocked:</strong> ${stats.adsBlocked || 0}<br>
+                    <strong>Trackers Blocked:</strong> ${stats.trackersBlocked || 0}<br>
+                    <strong>Scripts Blocked:</strong> ${stats.scriptsBlocked || 0}<br>
+                    <strong>Active Filter Rules:</strong> ${filterStats ? filterStats.activeRules : 0}
+                `;
+            } else {
+                statsEl.innerHTML = 'Ad Blocker not available';
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                checkStatus();
+                updateStats();
+            }, 1000);
+        });
+
+        // Update stats every 2 seconds
+        setInterval(updateStats, 2000);
+    </script>
+</body>
+</html>

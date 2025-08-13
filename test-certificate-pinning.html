@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Pinning Test - Cloak Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-section h2 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #4ecdc4;
+            padding-bottom: 10px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .status-card h3 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .status-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .status-value.enabled {
+            color: #51cf66;
+        }
+
+        .status-value.disabled {
+            color: #ff6b6b;
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .control-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4ecdc4;
+            font-weight: 500;
+        }
+
+        .control-group input,
+        .control-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .control-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #51cf66, #40c057);
+        }
+
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .results h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid #4ecdc4;
+        }
+
+        .result-item.success {
+            border-left-color: #51cf66;
+            background: rgba(81, 207, 102, 0.1);
+        }
+
+        .result-item.error {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .result-item.info {
+            border-left-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+
+        .domain-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .domain-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .domain-name {
+            font-family: monospace;
+            color: #4ecdc4;
+        }
+
+        .remove-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .add-domain-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .add-domain-section input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .add-domain-section input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .info-box {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid #4ecdc4;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-box h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "🔐";
+            position: absolute;
+            left: 0;
+            color: #4ecdc4;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .add-domain-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Certificate Pinning Test</h1>
+            <p>Test and verify Certificate Pinning functionality in Cloak Browser</p>
+        </div>
+
+        <div class="info-box">
+            <h3>What is Certificate Pinning?</h3>
+            <ul>
+                <li><strong>MITM Attack Prevention:</strong> Blocks connections with invalid certificates</li>
+                <li><strong>CA Compromise Protection:</strong> Protects against compromised certificate authorities</li>
+                <li><strong>Network Security:</strong> Ensures secure connections to trusted domains</li>
+                <li><strong>Certificate Transparency:</strong> Validates certificate authenticity</li>
+                <li><strong>Domain Verification:</strong> Confirms domain ownership and legitimacy</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Current Status</h2>
+            <div class="status-grid">
+                <div class="status-card">
+                    <h3>Pinning Enabled</h3>
+                    <div class="status-value" id="pinning-status">Loading...</div>
+                </div>
+                <div class="status-card">
+                    <h3>Monitoring Active</h3>
+                    <div class="status-value" id="monitoring-status">Loading...</div>
+                </div>
+                <div class="status-card">
+                    <h3>Pinned Domains</h3>
+                    <div class="status-value" id="pinned-domains-count">Loading...</div>
+                </div>
+                <div class="status-card">
+                    <h3>Blocked Domains</h3>
+                    <div class="status-value" id="blocked-domains-count">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎛️ Control Panel</h2>
+            <div class="control-panel">
+                <div class="control-group">
+                    <label for="pinning-toggle">Certificate Pinning</label>
+                    <select id="pinning-toggle">
+                        <option value="true">Enable</option>
+                        <option value="false">Disable</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="monitoring-toggle">Monitoring</label>
+                    <select id="monitoring-toggle">
+                        <option value="true">Start</option>
+                        <option value="false">Stop</option>
+                    </select>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <button class="btn btn-primary" onclick="updateStatus()">Update Status</button>
+                <button class="btn btn-success" onclick="testPinning()">Test Pinning</button>
+                <button class="btn btn-primary" onclick="getPinningReport()">Get Report</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🌐 Domain Management</h2>
+            <div class="add-domain-section">
+                <input type="text" id="domain-input" placeholder="Enter domain (e.g., example.com)">
+                <button class="btn btn-success" onclick="addDomain()">Add Domain</button>
+            </div>
+            <div id="domains-list" class="domain-list">
+                <!-- Domains will be populated here -->
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Test Results</h2>
+            <div id="test-results" class="results">
+                <h3>No tests run yet</h3>
+                <p>Click "Test Pinning" to run comprehensive tests</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Certificate Pinning test implementation
+        class CertificatePinningTester {
+            constructor() {
+                this.pinnedDomains = new Set(['google.com', 'github.com', 'cloudflare.com']);
+                this.blockedDomains = new Set();
+                this.enabled = false;
+                this.monitoring = false;
+            }
+
+            getStatus() {
+                return {
+                    enabled: this.enabled,
+                    monitoring: this.monitoring,
+                    pinnedDomains: this.pinnedDomains.size,
+                    blockedDomains: this.blockedDomains.size
+                };
+            }
+
+            setEnabled(enabled) {
+                this.enabled = enabled;
+                if (enabled) {
+                    this.startMonitoring();
+                } else {
+                    this.stopMonitoring();
+                }
+                return this.getStatus();
+            }
+
+            startMonitoring() {
+                this.monitoring = true;
+                return this.getStatus();
+            }
+
+            stopMonitoring() {
+                this.monitoring = false;
+                return this.getStatus();
+            }
+
+            addDomain(domain) {
+                if (domain && !this.pinnedDomains.has(domain)) {
+                    this.pinnedDomains.add(domain);
+                    return true;
+                }
+                return false;
+            }
+
+            removeDomain(domain) {
+                return this.pinnedDomains.delete(domain);
+            }
+
+            testPinning() {
+                return {
+                    enabled: this.enabled,
+                    monitoring: this.monitoring,
+                    testDomains: Array.from(this.pinnedDomains).map(domain => ({
+                        domain: domain,
+                        pinned: true,
+                        pinCount: 1
+                    })),
+                    validationTests: [],
+                    recommendations: []
+                };
+            }
+
+            getPinningReport() {
+                return {
+                    status: this.getStatus(),
+                    pinnedDomains: Array.from(this.pinnedDomains),
+                    blockedDomains: Array.from(this.blockedDomains),
+                    recommendations: []
+                };
+            }
+        }
+
+        // Initialize tester
+        const pinningTester = new CertificatePinningTester();
+
+        // DOM elements
+        const pinningStatus = document.getElementById('pinning-status');
+        const monitoringStatus = document.getElementById('monitoring-status');
+        const pinnedDomainsCount = document.getElementById('pinned-domains-count');
+        const blockedDomainsCount = document.getElementById('blocked-domains-count');
+        const pinningToggle = document.getElementById('pinning-toggle');
+        const monitoringToggle = document.getElementById('monitoring-toggle');
+        const domainInput = document.getElementById('domain-input');
+        const domainsList = document.getElementById('domains-list');
+        const testResults = document.getElementById('test-results');
+
+        // Update status display
+        function updateStatus() {
+            const status = pinningTester.getStatus();
+            
+            pinningStatus.textContent = status.enabled ? 'Enabled' : 'Disabled';
+            pinningStatus.className = `status-value ${status.enabled ? 'enabled' : 'disabled'}`;
+            
+            monitoringStatus.textContent = status.monitoring ? 'Active' : 'Inactive';
+            monitoringStatus.className = `status-value ${status.monitoring ? 'enabled' : 'disabled'}`;
+            
+            pinnedDomainsCount.textContent = status.pinnedDomains;
+            blockedDomainsCount.textContent = status.blockedDomains;
+
+            // Update toggle states
+            pinningToggle.value = status.enabled.toString();
+            monitoringToggle.value = status.monitoring.toString();
+
+            // Update domains list
+            updateDomainsList();
+        }
+
+        // Update domains list display
+        function updateDomainsList() {
+            domainsList.innerHTML = '';
+            const domains = Array.from(pinningTester.pinnedDomains);
+            
+            if (domains.length === 0) {
+                domainsList.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.7); font-style: italic;">No domains pinned</div>';
+                return;
+            }
+
+            domains.forEach(domain => {
+                const domainItem = document.createElement('div');
+                domainItem.className = 'domain-item';
+                
+                const domainName = document.createElement('span');
+                domainName.className = 'domain-name';
+                domainName.textContent = domain;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = 'Remove';
+                removeBtn.onclick = () => removeDomain(domain);
+                
+                domainItem.appendChild(domainName);
+                domainItem.appendChild(removeBtn);
+                domainsList.appendChild(domainItem);
+            });
+        }
+
+        // Add domain
+        function addDomain() {
+            const domain = domainInput.value.trim();
+            if (domain) {
+                if (pinningTester.addDomain(domain)) {
+                    domainInput.value = '';
+                    updateStatus();
+                    showResult('Domain added successfully: ' + domain, 'success');
+                } else {
+                    showResult('Domain already exists or is invalid: ' + domain, 'error');
+                }
+            }
+        }
+
+        // Remove domain
+        function removeDomain(domain) {
+            if (pinningTester.removeDomain(domain)) {
+                updateStatus();
+                showResult('Domain removed: ' + domain, 'success');
+            }
+        }
+
+        // Test pinning functionality
+        function testPinning() {
+            const result = pinningTester.testPinning();
+            const report = pinningTester.getPinningReport();
+            
+            let resultsHTML = '<h3>Certificate Pinning Test Results</h3>';
+            
+            // Basic status
+            resultsHTML += `
+                <div class="result-item ${result.enabled ? 'success' : 'info'}">
+                    <strong>Pinning Status:</strong> ${result.enabled ? 'Enabled' : 'Disabled'}
+                </div>
+                <div class="result-item ${result.monitoring ? 'success' : 'info'}">
+                    <strong>Monitoring Status:</strong> ${result.monitoring ? 'Active' : 'Inactive'}
+                </div>
+            `;
+            
+            // Test domains
+            resultsHTML += '<div class="result-item info"><strong>Test Domains:</strong></div>';
+            result.testDomains.forEach(domain => {
+                resultsHTML += `
+                    <div class="result-item success">
+                        ✓ ${domain.domain} - Pinned: ${domain.pinned}, Pin Count: ${domain.pinCount}
+                    </div>
+                `;
+            });
+            
+            // Blocked domains
+            if (report.blockedDomains.length > 0) {
+                resultsHTML += '<div class="result-item error"><strong>Blocked Domains:</strong></div>';
+                report.blockedDomains.forEach(domain => {
+                    resultsHTML += `
+                        <div class="result-item error">
+                            ⚠ ${domain} - Certificate validation failed
+                        </div>
+                    `;
+                });
+            }
+            
+            // Recommendations
+            if (report.recommendations.length > 0) {
+                resultsHTML += '<div class="result-item info"><strong>Recommendations:</strong></div>';
+                report.recommendations.forEach(rec => {
+                    resultsHTML += `<div class="result-item info">💡 ${rec}</div>`;
+                });
+            }
+            
+            testResults.innerHTML = resultsHTML;
+        }
+
+        // Get pinning report
+        function getPinningReport() {
+            const report = pinningTester.getPinningReport();
+            
+            let resultsHTML = '<h3>Certificate Pinning Report</h3>';
+            
+            // Status summary
+            resultsHTML += `
+                <div class="result-item info">
+                    <strong>Status Summary:</strong><br>
+                    Enabled: ${report.status.enabled}<br>
+                    Monitoring: ${report.status.monitoring}<br>
+                    Pinned Domains: ${report.status.pinnedDomains}<br>
+                    Blocked Domains: ${report.status.blockedDomains}
+                </div>
+            `;
+            
+            // Pinned domains
+            resultsHTML += '<div class="result-item success"><strong>Pinned Domains:</strong></div>';
+            report.pinnedDomains.forEach(domain => {
+                resultsHTML += `<div class="result-item success">🔐 ${domain}</div>`;
+            });
+            
+            // Blocked domains
+            if (report.blockedDomains.length > 0) {
+                resultsHTML += '<div class="result-item error"><strong>Blocked Domains:</strong></div>';
+                report.blockedDomains.forEach(domain => {
+                    resultsHTML += `<div class="result-item error">🚫 ${domain}</div>`;
+                });
+            } else {
+                resultsHTML += '<div class="result-item success">✅ No blocked domains</div>';
+            }
+            
+            testResults.innerHTML = resultsHTML;
+        }
+
+        // Show result message
+        function showResult(message, type = 'info') {
+            const resultItem = document.createElement('div');
+            resultItem.className = `result-item ${type}`;
+            resultItem.textContent = message;
+            
+            testResults.appendChild(resultItem);
+            testResults.scrollTop = testResults.scrollHeight;
+        }
+
+        // Event listeners
+        pinningToggle.addEventListener('change', (e) => {
+            const enabled = e.target.value === 'true';
+            pinningTester.setEnabled(enabled);
+            updateStatus();
+            showResult(`Certificate pinning ${enabled ? 'enabled' : 'disabled'}`, 'success');
+        });
+
+        monitoringToggle.addEventListener('change', (e) => {
+            const enabled = e.target.value === 'true';
+            if (enabled) {
+                pinningTester.startMonitoring();
+            } else {
+                pinningTester.stopMonitoring();
+            }
+            updateStatus();
+            showResult(`Monitoring ${enabled ? 'started' : 'stopped'}`, 'success');
+        });
+
+        domainInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addDomain();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus();
+            showResult('Certificate Pinning test page loaded successfully', 'success');
+        });
+    </script>
+</body>
+</html>

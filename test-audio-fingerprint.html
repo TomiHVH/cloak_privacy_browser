@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Fingerprint Protection Test - Cloak Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-section h2 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #4ecdc4;
+            padding-bottom: 10px;
+        }
+
+        .audio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .audio-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .audio-item h3 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .audio-visualizer {
+            width: 100%;
+            height: 100px;
+            background: #f0f0f0;
+            border: 2px solid #4ecdc4;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .audio-visualizer canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #51cf66, #40c057);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .results h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid #4ecdc4;
+        }
+
+        .result-item.success {
+            border-left-color: #51cf66;
+            background: rgba(81, 207, 102, 0.1);
+        }
+
+        .result-item.error {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .result-item.info {
+            border-left-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+
+        .info-box {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid #4ecdc4;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-box h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "🎵";
+            position: absolute;
+            left: 0;
+            color: #4ecdc4;
+        }
+
+        .fingerprint-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .audio-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .frequency-slider {
+            width: 200px;
+            margin: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .audio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Audio Fingerprint Protection Test</h1>
+            <p>Test and verify Audio Fingerprint Protection functionality in Cloak Browser</p>
+        </div>
+
+        <div class="info-box">
+            <h3>What is Audio Fingerprinting?</h3>
+            <ul>
+                <li><strong>Audio API Tracking:</strong> Websites use Web Audio API to generate unique device fingerprints</li>
+                <li><strong>Frequency Response:</strong> Each device processes audio frequencies differently</li>
+                <li><strong>Sample Rate Detection:</strong> Audio hardware capabilities are revealed</li>
+                <li><strong>Processing Algorithms:</strong> Different browsers process audio differently</li>
+                <li><strong>Anti-Fingerprinting:</strong> Our protection randomizes audio output to prevent tracking</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🎵 Audio Generation Tests</h2>
+            <div class="audio-grid">
+                <div class="audio-item">
+                    <h3>Oscillator Test</h3>
+                    <div class="audio-visualizer">
+                        <canvas id="oscillatorCanvas" width="280" height="100"></canvas>
+                    </div>
+                    <div class="audio-controls">
+                        <input type="range" id="frequencySlider" class="frequency-slider" min="200" max="2000" value="440" step="10">
+                        <span id="frequencyValue">440 Hz</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="startOscillator()">Start Oscillator</button>
+                        <button class="btn btn-danger" onclick="stopOscillator()">Stop Oscillator</button>
+                        <button class="btn btn-success" onclick="getOscillatorFingerprint()">Get Fingerprint</button>
+                    </div>
+                </div>
+
+                <div class="audio-item">
+                    <h3>Audio Buffer Test</h3>
+                    <div class="audio-visualizer">
+                        <canvas id="bufferCanvas" width="280" height="100"></canvas>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="createAudioBuffer()">Create Buffer</button>
+                        <button class="btn btn-success" onclick="getBufferFingerprint()">Get Fingerprint</button>
+                    </div>
+                </div>
+
+                <div class="audio-item">
+                    <h3>Analyser Test</h3>
+                    <div class="audio-visualizer">
+                        <canvas id="analyserCanvas" width="280" height="100"></canvas>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="startAnalyser()">Start Analyser</button>
+                        <button class="btn btn-danger" onclick="stopAnalyser()">Stop Analyser</button>
+                        <button class="btn btn-success" onclick="getAnalyserFingerprint()">Get Fingerprint</button>
+                    </div>
+                </div>
+
+                <div class="audio-item">
+                    <h3>Complex Audio Test</h3>
+                    <div class="audio-visualizer">
+                        <canvas id="complexCanvas" width="280" height="100"></canvas>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="playComplexAudio()">Play Complex Audio</button>
+                        <button class="btn btn-success" onclick="getComplexFingerprint()">Get Fingerprint</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Protection Testing</h2>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="testProtection()">Test Protection</button>
+                <button class="btn btn-success" onclick="compareFingerprints()">Compare Fingerprints</button>
+                <button class="btn btn-primary" onclick="clearResults()">Clear Results</button>
+            </div>
+            <div id="test-results" class="results">
+                <h3>No tests run yet</h3>
+                <p>Click "Test Protection" to run comprehensive tests</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Fingerprint Analysis</h2>
+            <div id="fingerprint-analysis" class="fingerprint-display">
+                <h3>Audio Fingerprint Analysis</h3>
+                <p>Run tests to see fingerprint analysis results</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Audio Fingerprint Protection test implementation
+        class AudioFingerprintTester {
+            constructor() {
+                this.audioContext = null;
+                this.oscillator = null;
+                this.analyser = null;
+                this.audioBuffer = null;
+                this.fingerprints = new Map();
+                this.testResults = [];
+                this.isPlaying = false;
+                this.analyserInterval = null;
+                this.initializeAudio();
+            }
+
+            async initializeAudio() {
+                try {
+                    // Create audio context
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Create analyser
+                    this.analyser = this.audioContext.createAnalyser();
+                    this.analyser.fftSize = 256;
+                    
+                    showResult('Audio context initialized successfully', 'success');
+                } catch (error) {
+                    showResult('Failed to initialize audio context: ' + error.message, 'error');
+                }
+            }
+
+            startOscillator() {
+                if (!this.audioContext) {
+                    showResult('Audio context not initialized', 'error');
+                    return;
+                }
+
+                try {
+                    // Stop existing oscillator
+                    if (this.oscillator) {
+                        this.oscillator.stop();
+                        this.oscillator.disconnect();
+                    }
+
+                    // Create new oscillator
+                    this.oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+                    
+                    // Set frequency from slider
+                    const frequency = document.getElementById('frequencySlider').value;
+                    this.oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+                    
+                    // Set volume
+                    gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+                    
+                    // Connect nodes
+                    this.oscillator.connect(gainNode);
+                    gainNode.connect(this.analyser);
+                    this.analyser.connect(this.audioContext.destination);
+                    
+                    // Start oscillator
+                    this.oscillator.start();
+                    this.isPlaying = true;
+                    
+                    // Start visualization
+                    this.visualizeOscillator();
+                    
+                    showResult('Oscillator started at ' + frequency + ' Hz', 'success');
+                } catch (error) {
+                    showResult('Failed to start oscillator: ' + error.message, 'error');
+                }
+            }
+
+            stopOscillator() {
+                if (this.oscillator) {
+                    this.oscillator.stop();
+                    this.oscillator.disconnect();
+                    this.oscillator = null;
+                    this.isPlaying = false;
+                    showResult('Oscillator stopped', 'success');
+                }
+            }
+
+            visualizeOscillator() {
+                const canvas = document.getElementById('oscillatorCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                const visualize = () => {
+                    if (!this.isPlaying) return;
+                    
+                    const bufferLength = this.analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+                    this.analyser.getByteFrequencyData(dataArray);
+                    
+                    // Clear canvas
+                    ctx.fillStyle = '#f0f0f0';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw frequency data
+                    const barWidth = (canvas.width / bufferLength) * 2.5;
+                    let barHeight;
+                    let x = 0;
+                    
+                    for (let i = 0; i < bufferLength; i++) {
+                        barHeight = dataArray[i] / 2;
+                        
+                        ctx.fillStyle = `hsl(${(i / bufferLength) * 360}, 70%, 60%)`;
+                        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                        
+                        x += barWidth + 1;
+                    }
+                    
+                    requestAnimationFrame(visualize);
+                };
+                
+                visualize();
+            }
+
+            createAudioBuffer() {
+                if (!this.audioContext) {
+                    showResult('Audio context not initialized', 'error');
+                    return;
+                }
+
+                try {
+                    // Create a simple audio buffer with a sine wave
+                    const sampleRate = this.audioContext.sampleRate;
+                    const length = sampleRate * 1; // 1 second
+                    this.audioBuffer = this.audioContext.createBuffer(1, length, sampleRate);
+                    
+                    const channelData = this.audioBuffer.getChannelData(0);
+                    const frequency = 440; // A4 note
+                    
+                    for (let i = 0; i < length; i++) {
+                        channelData[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * 0.1;
+                    }
+                    
+                    // Visualize the buffer
+                    this.visualizeBuffer();
+                    
+                    showResult('Audio buffer created successfully', 'success');
+                } catch (error) {
+                    showResult('Failed to create audio buffer: ' + error.message, 'error');
+                }
+            }
+
+            visualizeBuffer() {
+                const canvas = document.getElementById('bufferCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                if (!this.audioBuffer) return;
+                
+                const channelData = this.audioBuffer.getChannelData(0);
+                const step = Math.ceil(channelData.length / canvas.width);
+                
+                // Clear canvas
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw waveform
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height / 2);
+                
+                for (let i = 0; i < canvas.width; i++) {
+                    const index = Math.floor(i * step);
+                    const value = channelData[index] || 0;
+                    const y = (value * canvas.height / 2) + (canvas.height / 2);
+                    
+                    ctx.lineTo(i, y);
+                }
+                
+                ctx.strokeStyle = '#4ecdc4';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            startAnalyser() {
+                if (!this.analyser) {
+                    showResult('Analyser not initialized', 'error');
+                    return;
+                }
+
+                try {
+                    // Start analyser visualization
+                    this.visualizeAnalyser();
+                    showResult('Analyser started', 'success');
+                } catch (error) {
+                    showResult('Failed to start analyser: ' + error.message, 'error');
+                }
+            }
+
+            stopAnalyser() {
+                if (this.analyserInterval) {
+                    clearInterval(this.analyserInterval);
+                    this.analyserInterval = null;
+                    showResult('Analyser stopped', 'success');
+                }
+            }
+
+            visualizeAnalyser() {
+                const canvas = document.getElementById('analyserCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                this.analyserInterval = setInterval(() => {
+                    const bufferLength = this.analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+                    this.analyser.getByteFrequencyData(dataArray);
+                    
+                    // Clear canvas
+                    ctx.fillStyle = '#f0f0f0';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw frequency data as bars
+                    const barWidth = (canvas.width / bufferLength) * 2.5;
+                    let barHeight;
+                    let x = 0;
+                    
+                    for (let i = 0; i < bufferLength; i++) {
+                        barHeight = (dataArray[i] / 255) * canvas.height;
+                        
+                        ctx.fillStyle = `hsl(${(i / bufferLength) * 360}, 70%, 60%)`;
+                        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                        
+                        x += barWidth + 1;
+                    }
+                }, 50);
+            }
+
+            playComplexAudio() {
+                if (!this.audioContext) {
+                    showResult('Audio context not initialized', 'error');
+                    return;
+                }
+
+                try {
+                    // Create multiple oscillators with different frequencies
+                    const frequencies = [220, 440, 880]; // A3, A4, A5
+                    const oscillators = [];
+                    const gainNodes = [];
+                    
+                    frequencies.forEach((freq, index) => {
+                        const osc = this.audioContext.createOscillator();
+                        const gain = this.audioContext.createGain();
+                        
+                        osc.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+                        gain.gain.setValueAtTime(0.05, this.audioContext.currentTime);
+                        
+                        osc.connect(gain);
+                        gain.connect(this.analyser);
+                        
+                        osc.start();
+                        oscillators.push(osc);
+                        gainNodes.push(gain);
+                    });
+                    
+                    // Stop after 2 seconds
+                    setTimeout(() => {
+                        oscillators.forEach(osc => {
+                            osc.stop();
+                            osc.disconnect();
+                        });
+                        gainNodes.forEach(gain => gain.disconnect());
+                    }, 2000);
+                    
+                    // Visualize
+                    this.visualizeComplexAudio();
+                    
+                    showResult('Complex audio playing (2 seconds)', 'success');
+                } catch (error) {
+                    showResult('Failed to play complex audio: ' + error.message, 'error');
+                }
+            }
+
+            visualizeComplexAudio() {
+                const canvas = document.getElementById('complexCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                const animate = () => {
+                    // Clear canvas
+                    ctx.fillStyle = '#f0f0f0';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw animated pattern
+                    const time = Date.now() * 0.001;
+                    for (let i = 0; i < 10; i++) {
+                        const x = Math.sin(time + i) * 50 + canvas.width / 2;
+                        const y = Math.cos(time + i) * 30 + canvas.height / 2;
+                        const size = Math.sin(time * 2 + i) * 10 + 15;
+                        
+                        ctx.fillStyle = `hsl(${(i * 36 + time * 50) % 360}, 70%, 60%)`;
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                    
+                    requestAnimationFrame(animate);
+                };
+                
+                animate();
+            }
+
+            getAudioFingerprint(type) {
+                try {
+                    let fingerprint = '';
+                    
+                    switch (type) {
+                        case 'oscillator':
+                            if (this.oscillator) {
+                                fingerprint = this.oscillator.frequency.value.toString() + '_' + 
+                                           this.audioContext.sampleRate + '_' + 
+                                           this.audioContext.state;
+                            }
+                            break;
+                        case 'buffer':
+                            if (this.audioBuffer) {
+                                fingerprint = this.audioBuffer.length + '_' + 
+                                           this.audioBuffer.sampleRate + '_' + 
+                                           this.audioBuffer.numberOfChannels;
+                            }
+                            break;
+                        case 'analyser':
+                            if (this.analyser) {
+                                fingerprint = this.analyser.fftSize + '_' + 
+                                           this.analyser.frequencyBinCount + '_' + 
+                                           this.analyser.minDecibels;
+                            }
+                            break;
+                        case 'complex':
+                            fingerprint = this.audioContext.sampleRate + '_' + 
+                                       this.audioContext.state + '_' + 
+                                       Date.now();
+                            break;
+                    }
+                    
+                    // Create hash
+                    let hash = 0;
+                    for (let i = 0; i < fingerprint.length; i++) {
+                        const char = fingerprint.charCodeAt(i);
+                        hash = ((hash << 5) - hash) + char;
+                        hash = hash & hash;
+                    }
+                    
+                    return {
+                        hash: Math.abs(hash).toString(16),
+                        original: fingerprint,
+                        timestamp: Date.now()
+                    };
+                } catch (error) {
+                    return {
+                        error: error.message,
+                        timestamp: Date.now()
+                    };
+                }
+            }
+
+            testProtection() {
+                const results = {
+                    tests: [],
+                    recommendations: []
+                };
+
+                // Test 1: Audio context creation
+                try {
+                    if (this.audioContext) {
+                        results.tests.push({
+                            name: 'Audio Context',
+                            status: 'success',
+                            message: 'Audio context created successfully',
+                            fingerprint: this.getAudioFingerprint('complex')
+                        });
+                    } else {
+                        results.tests.push({
+                            name: 'Audio Context',
+                            status: 'error',
+                            message: 'Audio context not available'
+                        });
+                    }
+                } catch (error) {
+                    results.tests.push({
+                        name: 'Audio Context',
+                        status: 'error',
+                        message: 'Failed to create audio context: ' + error.message
+                    });
+                }
+
+                // Test 2: Oscillator
+                try {
+                    if (this.oscillator) {
+                        results.tests.push({
+                            name: 'Oscillator',
+                            status: 'success',
+                            message: 'Oscillator created successfully',
+                            fingerprint: this.getAudioFingerprint('oscillator')
+                        });
+                    } else {
+                        results.tests.push({
+                            name: 'Oscillator',
+                            status: 'info',
+                            message: 'Oscillator not created yet'
+                        });
+                    }
+                } catch (error) {
+                    results.tests.push({
+                        name: 'Oscillator',
+                        status: 'error',
+                        message: 'Failed to create oscillator: ' + error.message
+                    });
+                }
+
+                // Test 3: Audio buffer
+                try {
+                    if (this.audioBuffer) {
+                        results.tests.push({
+                            name: 'Audio Buffer',
+                            status: 'success',
+                            message: 'Audio buffer created successfully',
+                            fingerprint: this.getAudioFingerprint('buffer')
+                        });
+                    } else {
+                        results.tests.push({
+                            name: 'Audio Buffer',
+                            status: 'info',
+                            message: 'Audio buffer not created yet'
+                        });
+                    }
+                } catch (error) {
+                    results.tests.push({
+                        name: 'Audio Buffer',
+                        status: 'error',
+                        message: 'Failed to create audio buffer: ' + error.message
+                    });
+                }
+
+                // Test 4: Analyser
+                try {
+                    if (this.analyser) {
+                        results.tests.push({
+                            name: 'Analyser',
+                            status: 'success',
+                            message: 'Analyser created successfully',
+                            fingerprint: this.getAudioFingerprint('analyser')
+                        });
+                    } else {
+                        results.tests.push({
+                            name: 'Analyser',
+                            status: 'error',
+                            message: 'Analyser not available'
+                        });
+                    }
+                } catch (error) {
+                    results.tests.push({
+                        name: 'Analyser',
+                        status: 'error',
+                        message: 'Failed to create analyser: ' + error.message
+                    });
+                }
+
+                // Add recommendations
+                if (results.tests.filter(t => t.status === 'success').length < 2) {
+                    results.recommendations.push('Some audio operations failed - check browser compatibility');
+                }
+
+                results.recommendations.push('Compare fingerprints across different sessions to verify protection');
+                results.recommendations.push('With Audio Fingerprint Protection enabled, fingerprints should be randomized');
+
+                return results;
+            }
+
+            compareFingerprints() {
+                const currentFingerprints = [];
+                
+                // Get current fingerprints for all types
+                ['oscillator', 'buffer', 'analyser', 'complex'].forEach(type => {
+                    const fingerprint = this.getAudioFingerprint(type);
+                    if (fingerprint && !fingerprint.error) {
+                        currentFingerprints.push({
+                            type: type.charAt(0).toUpperCase() + type.slice(1),
+                            fingerprint: fingerprint
+                        });
+                    }
+                });
+
+                return currentFingerprints;
+            }
+        }
+
+        // Initialize tester
+        const audioTester = new AudioFingerprintTester();
+
+        // Global functions for button clicks
+        function startOscillator() {
+            audioTester.startOscillator();
+        }
+
+        function stopOscillator() {
+            audioTester.stopOscillator();
+        }
+
+        function getOscillatorFingerprint() {
+            const fingerprint = audioTester.getAudioFingerprint('oscillator');
+            if (fingerprint && !fingerprint.error) {
+                showResult('Oscillator Fingerprint: ' + fingerprint.hash, 'info');
+            } else {
+                showResult('No oscillator fingerprint available', 'error');
+            }
+        }
+
+        function createAudioBuffer() {
+            audioTester.createAudioBuffer();
+        }
+
+        function getBufferFingerprint() {
+            const fingerprint = audioTester.getAudioFingerprint('buffer');
+            if (fingerprint && !fingerprint.error) {
+                showResult('Buffer Fingerprint: ' + fingerprint.hash, 'info');
+            } else {
+                showResult('No buffer fingerprint available', 'error');
+            }
+        }
+
+        function startAnalyser() {
+            audioTester.startAnalyser();
+        }
+
+        function stopAnalyser() {
+            audioTester.stopAnalyser();
+        }
+
+        function getAnalyserFingerprint() {
+            const fingerprint = audioTester.getAudioFingerprint('analyser');
+            if (fingerprint && !fingerprint.error) {
+                showResult('Analyser Fingerprint: ' + fingerprint.hash, 'info');
+            } else {
+                showResult('No analyser fingerprint available', 'error');
+            }
+        }
+
+        function playComplexAudio() {
+            audioTester.playComplexAudio();
+        }
+
+        function getComplexFingerprint() {
+            const fingerprint = audioTester.getAudioFingerprint('complex');
+            if (fingerprint && !fingerprint.error) {
+                showResult('Complex Audio Fingerprint: ' + fingerprint.hash, 'info');
+            } else {
+                showResult('No complex audio fingerprint available', 'error');
+            }
+        }
+
+        function testProtection() {
+            const result = audioTester.testProtection();
+            
+            let resultsHTML = '<h3>Audio Fingerprint Protection Test Results</h3>';
+            
+            result.tests.forEach(test => {
+                const statusClass = test.status === 'success' ? 'success' : 
+                                  test.status === 'error' ? 'error' : 'info';
+                resultsHTML += `
+                    <div class="result-item ${statusClass}">
+                        <strong>${test.name}:</strong> ${test.status === 'success' ? '✓' : 
+                                                      test.status === 'error' ? '✗' : 'ℹ'} ${test.message}
+                    </div>
+                `;
+            });
+            
+            if (result.recommendations.length > 0) {
+                resultsHTML += '<div class="result-item info"><strong>Recommendations:</strong></div>';
+                result.recommendations.forEach(rec => {
+                    resultsHTML += `<div class="result-item info">💡 ${rec}</div>`;
+                });
+            }
+            
+            document.getElementById('test-results').innerHTML = resultsHTML;
+        }
+
+        function compareFingerprints() {
+            const fingerprints = audioTester.compareFingerprints();
+            
+            let analysisHTML = '<h3>Audio Fingerprint Analysis</h3>';
+            analysisHTML += '<p><strong>Current Session Fingerprints:</strong></p>';
+            
+            if (fingerprints.length > 0) {
+                fingerprints.forEach(fp => {
+                    analysisHTML += `
+                        <div class="result-item info">
+                            <strong>${fp.type}:</strong> ${fp.fingerprint.hash}
+                        </div>
+                    `;
+                });
+            } else {
+                analysisHTML += '<div class="result-item error">No fingerprints available</div>';
+            }
+            
+            analysisHTML += '<p><strong>Note:</strong> With Audio Fingerprint Protection enabled, these fingerprints should be randomized to prevent tracking.</p>';
+            
+            document.getElementById('fingerprint-analysis').innerHTML = analysisHTML;
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '<h3>No tests run yet</h3><p>Click "Test Protection" to run comprehensive tests</p>';
+            document.getElementById('fingerprint-analysis').innerHTML = '<h3>Audio Fingerprint Analysis</h3><p>Run tests to see fingerprint analysis results</p>';
+        }
+
+        function showResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultItem = document.createElement('div');
+            resultItem.className = `result-item ${type}`;
+            resultItem.textContent = message;
+            
+            resultsDiv.appendChild(resultItem);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        // Initialize frequency slider
+        document.addEventListener('DOMContentLoaded', () => {
+            const frequencySlider = document.getElementById('frequencySlider');
+            const frequencyValue = document.getElementById('frequencyValue');
+            
+            frequencySlider.addEventListener('input', (e) => {
+                frequencyValue.textContent = e.target.value + ' Hz';
+            });
+            
+            showResult('Audio Fingerprint Protection test page loaded successfully', 'success');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 WebRTC Protection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .info { border-left-color: #17a2b8; background: #d1ecf1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 WebRTC Protection Module Test</h1>
+        <p>This page tests the WebRTC protection module to ensure it works correctly.</p>
+        
+        <h2>Module Loading Test</h2>
+        <button onclick="testModuleLoading()">Test Module Loading</button>
+        <div id="module-loading-results"></div>
+        
+        <h2>WebRTC Functionality Test (Default: Enabled)</h2>
+        <button onclick="testWebRTCFunctionality()">Test WebRTC</button>
+        <div id="webrtc-results"></div>
+        
+        <h2>Protection Toggle Test</h2>
+        <button onclick="enableProtection()">Enable Protection</button>
+        <button onclick="disableProtection()">Disable Protection</button>
+        <div id="protection-results"></div>
+        
+        <h2>Console Output</h2>
+        <div id="console-output" style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <script type="module">
+        // Test the WebRTC protection module
+        let webrtcProtection;
+        
+        // Override console.log to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function addToConsole(type, message) {
+            const consoleDiv = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? '#dc3545' : '#007bff';
+            logEntry.textContent = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            consoleDiv.appendChild(logEntry);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole('log', args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole('error', args.join(' '));
+        };
+        
+        // Test module loading
+        window.testModuleLoading = async function() {
+            try {
+                const resultsDiv = document.getElementById('module-loading-results');
+                resultsDiv.innerHTML = '';
+                
+                addResult(resultsDiv, 'info', 'Loading WebRTC protection module...');
+                
+                const module = await import('./src/webrtc-protection.js');
+                webrtcProtection = module.webrtcProtection;
+                
+                addResult(resultsDiv, 'success', 'Module loaded successfully!');
+                addResult(resultsDiv, 'info', `Protection enabled: ${webrtcProtection.enabled}`);
+                addResult(resultsDiv, 'info', `Status: ${JSON.stringify(webrtcProtection.getStatus())}`);
+                
+            } catch (error) {
+                addResult(resultsDiv, 'error', `Failed to load module: ${error.message}`);
+                console.error('Module loading error:', error);
+            }
+        };
+        
+        // Test WebRTC functionality
+        window.testWebRTCFunctionality = function() {
+            const resultsDiv = document.getElementById('webrtc-results');
+            resultsDiv.innerHTML = '';
+            
+            try {
+                addResult(resultsDiv, 'info', 'Testing WebRTC functionality...');
+                
+                // Test RTCPeerConnection
+                if (typeof RTCPeerConnection !== 'undefined') {
+                    const pc = new RTCPeerConnection();
+                    addResult(resultsDiv, 'success', 'RTCPeerConnection created successfully');
+                    
+                    // Test createOffer
+                    pc.createOffer().then(offer => {
+                        addResult(resultsDiv, 'success', 'createOffer() works - WebRTC is functional');
+                    }).catch(error => {
+                        addResult(resultsDiv, 'error', `createOffer() failed: ${error.message}`);
+                    });
+                    
+                    // Test createDataChannel
+                    try {
+                        const dc = pc.createDataChannel('test');
+                        addResult(resultsDiv, 'success', 'createDataChannel() works');
+                    } catch (error) {
+                        addResult(resultsDiv, 'error', `createDataChannel() failed: ${error.message}`);
+                    }
+                    
+                } else {
+                    addResult(resultsDiv, 'error', 'RTCPeerConnection is not available');
+                }
+                
+            } catch (error) {
+                addResult(resultsDiv, 'error', `WebRTC test failed: ${error.message}`);
+            }
+        };
+        
+        // Test protection enable
+        window.enableProtection = function() {
+            if (!webrtcProtection) {
+                addResult(document.getElementById('protection-results'), 'error', 'Module not loaded yet');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('protection-results');
+            resultsDiv.innerHTML = '';
+            
+            try {
+                webrtcProtection.setEnabled(true);
+                addResult(resultsDiv, 'success', 'Protection enabled');
+                addResult(resultsDiv, 'info', `Status: ${JSON.stringify(webrtcProtection.getStatus())}`);
+                
+                // Test if WebRTC is now blocked
+                setTimeout(() => {
+                    try {
+                        new RTCPeerConnection();
+                        addResult(resultsDiv, 'error', 'WebRTC still accessible after enabling protection');
+                    } catch (error) {
+                        if (error.message.includes('WebRTC is disabled')) {
+                            addResult(resultsDiv, 'success', 'WebRTC is properly blocked');
+                        } else {
+                            addResult(resultsDiv, 'info', `WebRTC blocked by other means: ${error.message}`);
+                        }
+                    }
+                }, 100);
+                
+            } catch (error) {
+                addResult(resultsDiv, 'error', `Failed to enable protection: ${error.message}`);
+            }
+        };
+        
+        // Test protection disable
+        window.disableProtection = function() {
+            if (!webrtcProtection) {
+                addResult(document.getElementById('protection-results'), 'error', 'Module not loaded yet');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('protection-results');
+            resultsDiv.innerHTML = '';
+            
+            try {
+                webrtcProtection.setEnabled(false);
+                addResult(resultsDiv, 'success', 'Protection disabled');
+                addResult(resultsDiv, 'info', `Status: ${JSON.stringify(webrtcProtection.getStatus())}`);
+                
+                // Test if WebRTC is now accessible
+                setTimeout(() => {
+                    try {
+                        const pc = new RTCPeerConnection();
+                        addResult(resultsDiv, 'success', 'WebRTC is accessible after disabling protection');
+                    } catch (error) {
+                        addResult(resultsDiv, 'error', `WebRTC still blocked: ${error.message}`);
+                    }
+                }, 100);
+                
+            } catch (error) {
+                addResult(resultsDiv, 'error', `Failed to disable protection: ${error.message}`);
+            }
+        };
+        
+        function addResult(container, type, message) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+            container.appendChild(resultDiv);
+        }
+        
+        // Auto-test module loading
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testModuleLoading();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

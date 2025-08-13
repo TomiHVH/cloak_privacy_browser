@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Protection Test - Minimal Browser</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.active {
+            background: #28a745;
+            color: white;
+        }
+        .status.inactive {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 WebRTC Protection Test</h1>
+        <p>This page tests the WebRTC functionality and protection features of Minimal Browser. By default, WebRTC is enabled for full functionality, but you can enable protection to prevent IP leaks.</p>
+        
+        <div class="test-section">
+            <h3>Protection Status</h3>
+            <p>
+                WebRTC Protection: 
+                <span id="protection-status" class="status">Checking...</span>
+            </p>
+            <p id="protection-details">Loading protection details...</p>
+        </div>
+
+        <div class="test-section">
+            <h3>WebRTC Functionality Test</h3>
+            <p>These tests verify that WebRTC is working when protection is disabled:</p>
+            
+            <button class="test-button" onclick="testWebRTCFunctionality()">Test WebRTC Functionality</button>
+            <button class="test-button" onclick="testMediaAccess()">Test Media Access</button>
+            <button class="test-button" onclick="testDataChannels()">Test Data Channels</button>
+            
+            <div id="functionality-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>WebRTC Protection Tests</h3>
+            <p>These tests attempt to use WebRTC APIs that should be blocked when protection is enabled:</p>
+            
+            <button class="test-button" onclick="testRTCPeerConnection()">Test RTCPeerConnection</button>
+            <button class="test-button" onclick="testGetUserMedia()">Test getUserMedia</button>
+            <button class="test-button" onclick="testRTCDataChannel()">Test RTCDataChannel</button>
+            <button class="test-button" onclick="testSTUNServer()">Test STUN Server</button>
+            <button class="test-button" onclick="testAllWebRTC()">Test All WebRTC</button>
+            
+            <div id="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Privacy Report</h3>
+            <button class="test-button" onclick="generatePrivacyReport()">Generate Report</button>
+            <div id="privacy-report"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Manual Test</h3>
+            <p>Try to manually create WebRTC objects in the browser console:</p>
+            <code>new RTCPeerConnection()</code><br>
+            <code>navigator.mediaDevices.getUserMedia({video: true})</code><br>
+            <code>new RTCDataChannel()</code>
+        </div>
+    </div>
+
+    <script>
+        // Test results container
+        const testResults = document.getElementById('test-results');
+        const functionalityResults = document.getElementById('functionality-results');
+        const privacyReport = document.getElementById('privacy-report');
+        const protectionStatus = document.getElementById('protection-status');
+        const protectionDetails = document.getElementById('protection-details');
+
+        // Add test result
+        function addResult(message, type = 'info') {
+            const result = document.createElement('div');
+            result.className = `result ${type}`;
+            result.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            testResults.appendChild(result);
+            testResults.scrollTop = testResults.scrollTop + 100;
+        }
+
+        // Check if WebRTC protection is active
+        function checkProtectionStatus() {
+            try {
+                // Try to create RTCPeerConnection
+                new RTCPeerConnection();
+                protectionStatus.textContent = 'INACTIVE';
+                protectionStatus.className = 'status inactive';
+                protectionDetails.textContent = 'WebRTC is accessible - protection may not be working';
+                addResult('❌ WebRTC Protection: INACTIVE - RTCPeerConnection is accessible', 'error');
+            } catch (e) {
+                if (e.message.includes('WebRTC is disabled')) {
+                    protectionStatus.textContent = 'ACTIVE';
+                    protectionStatus.className = 'status active';
+                    protectionDetails.textContent = 'WebRTC is properly blocked by protection';
+                    addResult('✅ WebRTC Protection: ACTIVE - RTCPeerConnection is blocked', 'success');
+                } else {
+                    protectionStatus.textContent = 'PARTIAL';
+                    protectionStatus.className = 'status warning';
+                    protectionDetails.textContent = `WebRTC blocked by other means: ${e.message}`;
+                    addResult(`⚠️ WebRTC Protection: PARTIAL - ${e.message}`, 'warning');
+                }
+            }
+        }
+
+        // Test RTCPeerConnection
+        function testRTCPeerConnection() {
+            addResult('Testing RTCPeerConnection...', 'info');
+            try {
+                const pc = new RTCPeerConnection();
+                addResult('❌ RTCPeerConnection created successfully - protection failed', 'error');
+            } catch (e) {
+                if (e.message.includes('WebRTC is disabled')) {
+                    addResult('✅ RTCPeerConnection blocked by protection', 'success');
+                } else {
+                    addResult(`⚠️ RTCPeerConnection blocked by other means: ${e.message}`, 'warning');
+                }
+            }
+        }
+
+        // Test getUserMedia
+        function testGetUserMedia() {
+            addResult('Testing getUserMedia...', 'info');
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({video: true})
+                    .then(() => {
+                        addResult('❌ getUserMedia succeeded - protection failed', 'error');
+                    })
+                    .catch(e => {
+                        if (e.message.includes('Media access is disabled')) {
+                            addResult('✅ getUserMedia blocked by protection', 'success');
+                        } else {
+                            addResult(`⚠️ getUserMedia blocked by other means: ${e.message}`, 'warning');
+                        }
+                    });
+            } else {
+                addResult('⚠️ getUserMedia not available', 'warning');
+            }
+        }
+
+        // Test RTCDataChannel
+        function testRTCDataChannel() {
+            addResult('Testing RTCDataChannel...', 'info');
+            try {
+                new RTCDataChannel();
+                addResult('❌ RTCDataChannel created successfully - protection failed', 'error');
+            } catch (e) {
+                if (e.message.includes('WebRTC Data Channels are disabled')) {
+                    addResult('✅ RTCDataChannel blocked by protection', 'success');
+                } else {
+                    addResult(`⚠️ RTCDataChannel blocked by other means: ${e.message}`, 'warning');
+                }
+            }
+        }
+
+        // Test STUN server
+        function testSTUNServer() {
+            addResult('Testing STUN server configuration...', 'info');
+            try {
+                const pc = new RTCPeerConnection({
+                    iceServers: [{
+                        urls: 'stun:stun.l.google.com:19302'
+                    }]
+                });
+                addResult('❌ STUN server configured successfully - protection failed', 'error');
+            } catch (e) {
+                if (e.message.includes('WebRTC is disabled')) {
+                    addResult('✅ STUN server blocked by protection', 'success');
+                } else {
+                    addResult(`⚠️ STUN server blocked by other means: ${e.message}`, 'warning');
+                }
+            }
+        }
+
+        // Test all WebRTC features
+        function testAllWebRTC() {
+            addResult('Running comprehensive WebRTC test...', 'info');
+            
+            // Test RTCPeerConnection
+            testRTCPeerConnection();
+            
+            // Test getUserMedia
+            setTimeout(testGetUserMedia, 500);
+            
+            // Test RTCDataChannel
+            setTimeout(testRTCDataChannel, 1000);
+            
+            // Test STUN server
+            setTimeout(testSTUNServer, 1500);
+            
+            addResult('Comprehensive test completed', 'info');
+        }
+
+        // Test WebRTC functionality when protection is disabled
+        function testWebRTCFunctionality() {
+            addFunctionalityResult('Testing WebRTC functionality...', 'info');
+            try {
+                const pc = new RTCPeerConnection();
+                addFunctionalityResult('✅ RTCPeerConnection created successfully - WebRTC is working', 'success');
+                
+                // Test basic WebRTC operations
+                pc.createOffer()
+                    .then(offer => {
+                        addFunctionalityResult('✅ createOffer() working - WebRTC fully functional', 'success');
+                    })
+                    .catch(e => {
+                        addFunctionalityResult(`⚠️ createOffer() failed: ${e.message}`, 'warning');
+                    });
+                
+                pc.close();
+            } catch (e) {
+                addFunctionalityResult(`❌ RTCPeerConnection failed: ${e.message}`, 'error');
+            }
+        }
+
+        // Test media access when protection is disabled
+        function testMediaAccess() {
+            addFunctionalityResult('Testing media access...', 'info');
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({video: true})
+                    .then(stream => {
+                        addFunctionalityResult('✅ Media access granted - camera working', 'success');
+                        // Stop the stream
+                        stream.getTracks().forEach(track => track.stop());
+                    })
+                    .catch(e => {
+                        addFunctionalityResult(`⚠️ Media access failed: ${e.message}`, 'warning');
+                    });
+            } else {
+                addFunctionalityResult('⚠️ getUserMedia not available', 'warning');
+            }
+        }
+
+        // Test data channels when protection is disabled
+        function testDataChannels() {
+            addFunctionalityResult('Testing data channels...', 'info');
+            try {
+                const pc = new RTCPeerConnection();
+                const channel = pc.createDataChannel('test');
+                addFunctionalityResult('✅ Data channel created successfully', 'success');
+                pc.close();
+            } catch (e) {
+                addFunctionalityResult(`❌ Data channel creation failed: ${e.message}`, 'error');
+            }
+        }
+
+        // Add functionality test result
+        function addFunctionalityResult(message, type = 'info') {
+            const result = document.createElement('div');
+            result.className = `result ${type}`;
+            result.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            functionalityResults.appendChild(result);
+            functionalityResults.scrollTop = functionalityResults.scrollTop + 100;
+        }
+
+        // Generate privacy report
+        function generatePrivacyReport() {
+            addResult('Generating privacy report...', 'info');
+            
+            const report = {
+                timestamp: new Date().toISOString(),
+                webrtcBlocked: false,
+                protectionLevel: 'Unknown',
+                recommendations: []
+            };
+
+            try {
+                new RTCPeerConnection();
+                report.webrtcBlocked = false;
+                report.protectionLevel = 'None';
+                report.recommendations.push('Enable WebRTC protection immediately');
+            } catch (e) {
+                if (e.message.includes('WebRTC is disabled')) {
+                    report.webrtcBlocked = true;
+                    report.protectionLevel = 'Maximum';
+                    report.recommendations.push('WebRTC protection is working correctly');
+                } else {
+                    report.webrtcBlocked = true;
+                    report.protectionLevel = 'Partial';
+                    report.recommendations.push('WebRTC blocked by other means');
+                }
+            }
+
+            // Display report
+            privacyReport.innerHTML = `
+                <div class="result info">
+                    <strong>Privacy Report:</strong>
+                    WebRTC Blocked: ${report.webrtcBlocked ? '✅ Yes' : '❌ No'}
+                    Protection Level: ${report.protectionLevel}
+                    Recommendations: ${report.recommendations.join(', ')}
+                </div>
+            `;
+            
+            addResult('Privacy report generated', 'success');
+        }
+
+        // Initialize page
+        window.addEventListener('load', () => {
+            addResult('Page loaded, checking WebRTC protection status...', 'info');
+            setTimeout(checkProtectionStatus, 1000);
+        });
+
+        // Add some helpful console messages
+        console.log('🔒 WebRTC Protection Test Page Loaded');
+        console.log('Try running the tests above or manually test WebRTC APIs in the console');
+        console.log('Expected behavior: All WebRTC attempts should be blocked with privacy protection messages');
+    </script>
+</body>
+</html>
