@@ -1,0 +1,31 @@
+[package]
+name = "cloak_browser"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+urlencoding = "2"
+wry = { version = "0.43", features = ["protocol"] }
+tao = "0.26"
+directories = "5"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1.0"
+reqwest = { version = "0.11", features = ["blocking"] }
+rfd = "0.14"
+
+# Security-focused dependencies
+url = "2.4"           # URL parsing and validation
+regex = "1.10"        # Pattern matching for validation
+uuid = { version = "1.4", features = ["v4"] }  # Secure ID generation
+
+[profile.release]
+# Security-focused release profile
+panic = "abort"       # Abort on panic for security
+lto = true           # Link-time optimization
+codegen-units = 1    # Single codegen unit for better optimization
+opt-level = 3        # Maximum optimization
+strip = true         # Strip symbols for smaller attack surface
+
+[profile.dev]
+panic = "abort"      # Consistent panic behavior in dev mode
